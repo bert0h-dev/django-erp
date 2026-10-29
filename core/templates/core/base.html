@@ -1,0 +1,81 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#106573" />
+    <title>ERP Project | {% block title %}Panel{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        font-family: 'DM Sans', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[#f2f6f6] text-slate-800 antialiased">
+    <header class="sticky top-0 z-30 border-b border-white/10 bg-[#106573] text-white shadow-lg shadow-[#10363c]/10">
+      <nav aria-label="Navegación principal" class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <a href="{% url 'dashboard' %}" class="flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/70">
+          <img src="{% static 'img/logo_2.svg' %}" alt="" class="h-10 w-10" />
+          <span class="text-sm font-bold tracking-[0.14em] sm:text-base">ERP PROJECT</span>
+        </a>
+
+        <div class="hidden items-center gap-2 md:flex">
+          <a href="{% url 'dashboard' %}" class="rounded-xl bg-white/15 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20">
+            Panel principal
+          </a>
+        </div>
+
+        <div class="hidden items-center md:flex">
+          <div class="relative">
+            <button id="user-menu-button" type="button" aria-expanded="false" aria-controls="user-menu-dropdown" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/70">
+              <span class="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-sm font-bold">
+                {{ user.first_name|default:user.username|first|upper }}
+              </span>
+              <span class="max-w-40 truncate">{{ user.first_name|default:user.username }}</span>
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+            <div id="user-menu-dropdown" class="user-dropdown-menu absolute right-0 mt-2 hidden w-52 overflow-hidden rounded-2xl border border-slate-100 bg-white py-2 text-sm text-slate-700 shadow-xl shadow-slate-900/10">
+              <div class="border-b border-slate-100 px-4 py-3">
+                <p class="font-semibold text-slate-900">{{ user.first_name|default:user.username }}</p>
+                <p class="mt-0.5 truncate text-xs text-slate-500">{{ user.username }}</p>
+              </div>
+              <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-teal-50 hover:text-[#106573]">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Cerrar sesión
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <button id="hamburger-btn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu" class="grid h-10 w-10 place-items-center rounded-xl transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/70 md:hidden">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </nav>
+
+      <div id="mobile-menu" class="hidden border-t border-white/10 bg-[#0d5965] px-4 py-4 md:hidden">
+        <a href="{% url 'dashboard' %}" class="block rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-white/10">Panel principal</a>
+        <div class="mt-3 border-t border-white/15 pt-3">
+          <p class="px-4 py-2 text-sm font-semibold">{{ user.first_name|default:user.username }}</p>
+          <a href="{% url 'logout' %}" class="block rounded-xl px-4 py-3 text-sm transition hover:bg-white/10">Cerrar sesión</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      {% block content %}{% endblock %}
+    </main>
+
+    <script src="{% static 'js/script.js' %}"></script>
+  </body>
+</html>
