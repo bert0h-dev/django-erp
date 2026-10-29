@@ -1,0 +1,167 @@
+<div align="center">
+  <img src="core/static/img/logo_2.svg" alt="ERP Project" width="120" />
+  <h1>ERP Project</h1>
+  <p><strong>La operación de tu negocio, en un solo lugar.</strong></p>
+  <p>
+    Aplicación web ERP en desarrollo, construida con Django y una interfaz responsive
+    en tonos teal.
+  </p>
+</div>
+
+---
+
+## Sobre el proyecto
+
+ERP Project es la base de una plataforma para organizar procesos de negocio desde
+un panel central. Actualmente incluye autenticación, administración de usuarios y
+roles, y un dashboard que muestra los módulos disponibles según los permisos de
+cada usuario.
+
+> **Estado:** en desarrollo. Las tarjetas del dashboard ya representan los módulos
+> planeados, pero sus enlaces todavía son marcadores y no implementan los flujos
+> completos de cada módulo.
+
+## Lo que ya tiene
+
+- Inicio y cierre de sesión con el sistema de autenticación de Django.
+- Dashboard protegido para usuarios autenticados.
+- Usuarios personalizados y asignación de varios roles.
+- Permisos por módulo con tres niveles: sin acceso, solo lectura y lectura/escritura.
+- Panel de administración de Django para gestionar usuarios, roles y asignaciones.
+- Interfaz responsive con Tailwind CSS y color principal `#106573`.
+
+### Módulos considerados
+
+Clientes · Proveedores · Materiales · Compras · Ventas · Inventario · Contabilidad ·
+Reportes
+
+## Tecnologías
+
+- **Python** 3.12
+- **Django** 6.1.2
+- **SQLite** para desarrollo local
+- **Tailwind CSS** mediante CDN
+- **DM Sans** desde Google Fonts
+
+La interfaz carga Tailwind y la tipografía desde servicios externos; se necesita
+conexión a Internet para que se apliquen esos estilos y fuentes.
+
+## Requisitos
+
+- Python 3.12 o compatible con la versión instalada de Django.
+- `pip`.
+- Git (opcional, para clonar el proyecto).
+
+## Instalación y ejecución
+
+Desde la carpeta del proyecto:
+
+1. Crea y activa un entorno virtual:
+
+   ```bash
+   python -m venv .venv
+   ```
+
+   Linux o macOS:
+
+   ```bash
+   source .venv/bin/activate
+   ```
+
+   Windows PowerShell:
+
+   ```powershell
+   .venv\Scripts\Activate.ps1
+   ```
+
+2. Instala Django:
+
+   ```bash
+   python -m pip install "Django==6.1.2"
+   ```
+
+3. Aplica las migraciones y, si lo necesitas, crea una cuenta administradora:
+
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+
+4. Inicia el servidor de desarrollo:
+
+   ```bash
+   python manage.py runserver
+   ```
+
+Abre <http://127.0.0.1:8000/login/> para iniciar sesión. Las rutas principales son:
+
+| Ruta | Uso |
+| --- | --- |
+| `/login/` | Inicio de sesión |
+| `/dashboard/` | Panel principal (requiere autenticación) |
+| `/logout/` | Cerrar sesión |
+| `/admin/` | Administración de Django |
+
+## Roles y permisos
+
+Cada rol puede tener un nivel de acceso independiente para cada módulo:
+
+| Nivel | Valor | Acceso |
+| --- | ---: | --- |
+| Sin acceso | `0` | El módulo no aparece en el dashboard |
+| Solo lectura | `1` | Acceso de consulta |
+| Lectura y escritura | `2` | Acceso de consulta y modificación |
+
+Un usuario puede tener más de un rol. Para mostrar sus módulos, el dashboard toma
+el nivel más alto que el usuario tenga asignado en cada uno. Los roles y sus
+permisos se administran desde `/admin/`.
+
+## Estructura del proyecto
+
+```text
+erp_project/
+├── core/
+│   ├── static/                 # Logo y JavaScript del menú
+│   ├── templates/core/         # Layout base y dashboard
+│   ├── urls.py
+│   └── views.py                # Dashboard y permisos
+├── erp_project/
+│   ├── settings.py             # Configuración Django
+│   └── urls.py                 # Rutas principales
+├── users/
+│   ├── migrations/
+│   ├── templates/users/        # Login
+│   ├── models.py               # Usuario, roles y asignaciones
+│   ├── forms.py
+│   ├── urls.py
+│   └── views.py                # Login y logout
+├── manage.py
+└── README.md
+```
+
+## Comprobaciones
+
+Verifica la configuración de Django con:
+
+```bash
+python manage.py check
+```
+
+Ejecuta las pruebas del proyecto con:
+
+```bash
+python manage.py test
+```
+
+## Próximos pasos
+
+- Implementar las pantallas y operaciones de cada módulo.
+- Conectar las tarjetas del dashboard con sus rutas definitivas.
+- Añadir y ampliar pruebas de autenticación, permisos y vistas.
+- Preparar configuración segura para despliegue y dependencias versionadas.
+
+## Nota para despliegues
+
+La configuración actual está orientada al desarrollo local. Antes de desplegar,
+configura una clave secreta segura fuera del código, `DEBUG = False`, hosts
+permitidos, HTTPS y una base de datos adecuada para producción.
