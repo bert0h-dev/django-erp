@@ -1,12 +1,12 @@
 {% extends 'core/base.html' %}
-{% block title %}Panel principal{% endblock %}
+{% block title %}
+  Panel principal
+{% endblock %}
 {% block content %}
   <section class="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
     <div>
       <p class="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#106573]">Tu espacio de trabajo</p>
-      <h1 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-        Hola, {{ user.first_name|default:user.username }}
-      </h1>
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Hola, {{ user.first_name|default:user.username }}</h1>
       <p class="mt-2 text-slate-500">Accede rápidamente a los módulos disponibles para tu cuenta.</p>
     </div>
     <div class="inline-flex w-fit items-center gap-2 rounded-full border border-[#d6e8e8] bg-white px-3.5 py-2 text-sm text-slate-600 shadow-sm">
@@ -19,96 +19,168 @@
     <div class="mb-4 flex items-center justify-between">
       <h2 id="modules-heading" class="text-lg font-semibold text-slate-900">Módulos</h2>
       {% if roles %}
-        <p class="text-sm text-slate-500">Rol{{ roles|length|pluralize }}: {{ roles|join:", " }}</p>
+        <p class="text-sm text-slate-500">Rol{{ roles|length|pluralize }}: {{ roles|join:', ' }}</p>
       {% endif %}
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {% if permissions.materials > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
+        <a href="{% url 'materials:materials_list' %}" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Materiales</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.materials == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.materials == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.customers > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m12-13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm2 5a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /><path d="M17 4a4 4 0 0 1 0 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m12-13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm2 5a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M17 4a4 4 0 0 1 0 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Clientes</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.customers == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.customers == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.suppliers > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /><circle cx="7.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" /><circle cx="17.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="7.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" />
+              <circle cx="17.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Proveedores</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.suppliers == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.suppliers == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.purchases > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="21" r="1" stroke="currentColor" stroke-width="1.7" /><circle cx="19" cy="21" r="1" stroke="currentColor" stroke-width="1.7" /><path d="M2 3h2l2.5 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L22 8H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="9" cy="21" r="1" stroke="currentColor" stroke-width="1.7" />
+              <circle cx="19" cy="21" r="1" stroke="currentColor" stroke-width="1.7" />
+              <path d="M2 3h2l2.5 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L22 8H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Compras</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.purchases == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.purchases == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.sales > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m3 17 6-6 4 4 8-9m-6 0h6v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m3 17 6-6 4 4 8-9m-6 0h6v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Ventas</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.sales == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.sales == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.inventory > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 5v8l9 5 9-5V8m-9 5v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 5v8l9 5 9-5V8m-9 5v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Inventario</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.inventory == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.inventory == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.accounting > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /><path d="M9 8h6m-6 4h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M9 8h6m-6 4h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Contabilidad</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.accounting == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.accounting == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
 
       {% if permissions.reporting > 0 %}
         <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
           <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5m0 14h17M8 15v-4m5 4V7m5 8v-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 19V5m0 14h17M8 15v-4m5 4V7m5 8v-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
           <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Reportes</h3>
-          <p class="mt-1 text-sm text-slate-500">{% if permissions.reporting == 1 %}Solo lectura{% else %}Lectura y escritura{% endif %}</p>
+          <p class="mt-1 text-sm text-slate-500">
+            {% if permissions.reporting == 1 %}
+              Solo lectura
+            {% else %}
+              Lectura y escritura
+            {% endif %}
+          </p>
         </a>
       {% endif %}
     </div>
 
     {% if permissions.materials == 0 and permissions.customers == 0 and permissions.suppliers == 0 and permissions.purchases == 0 and permissions.sales == 0 and permissions.inventory == 0 and permissions.accounting == 0 and permissions.reporting == 0 %}
-      <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900" role="status">
-        <h3 class="font-semibold">Aún no tienes módulos asignados</h3>
-        <p class="mt-1 text-sm text-amber-800">Pide al administrador que configure los permisos de tu cuenta.</p>
+      <div class="ui-status-warning mt-6" role="status">
+        <div>
+          <h3 class="font-semibold">Aún no tienes módulos asignados</h3>
+          <p class="mt-1 text-sm">Pide al administrador que configure los permisos de tu cuenta.</p>
+        </div>
       </div>
     {% endif %}
   </section>

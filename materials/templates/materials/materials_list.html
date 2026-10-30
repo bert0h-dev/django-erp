@@ -1,0 +1,188 @@
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+{% block title %}Materiales{% endblock %}
+
+{% block content %}
+  <section class="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+    <div>
+      <p class="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#106573]">Catálogo</p>
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Materiales</h1>
+      <p class="mt-2 text-slate-500">Consulta y administra los materiales de tu negocio.</p>
+    </div>
+    {% if permissions.materials >= 2 %}
+      <a href="{% url 'materials:material_create' %}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#106573] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#106573]/20 transition hover:bg-[#0c535e] focus:outline-none focus:ring-4 focus:ring-[#106573]/20">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        Crear material
+      </a>
+    {% endif %}
+  </section>
+
+  <section aria-label="Filtros de materiales" class="ui-card mb-6 p-5 sm:p-6">
+    <form method="get" action="{% url 'materials:materials_list' %}" class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 xl:grid-cols-4" data-loading-form>
+      <div>
+        <label for="id_material" class="mb-2 block text-sm font-semibold text-slate-700">ID de material</label>
+        <input type="text" name="id_material" id="id_material" value="{{ request.GET.id_material }}" class="ui-field" />
+      </div>
+      <div>
+        <label for="name" class="mb-2 block text-sm font-semibold text-slate-700">Nombre</label>
+        <input type="text" name="name" id="name" value="{{ request.GET.name }}" class="ui-field" />
+      </div>
+      <div>
+        <label for="material_type" class="mb-2 block text-sm font-semibold text-slate-700">Tipo de material</label>
+        <select name="material_type" id="material_type" class="ui-field">
+          <option value="" {% if not request.GET.material_type %}selected{% endif %}>Todos</option>
+          {% for material_type_obj in all_material_types %}
+            <option value="{{ material_type_obj.name }}" {% if request.GET.material_type == material_type_obj.name %}selected{% endif %}>{{ material_type_obj.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="status" class="mb-2 block text-sm font-semibold text-slate-700">Estado</label>
+        <select name="status" id="status" class="ui-field">
+          <option value="" {% if not request.GET.status %}selected{% endif %}>Todos</option>
+          <option value="Active" {% if request.GET.status == 'Active' %}selected{% endif %}>Activo</option>
+          <option value="Inactive" {% if request.GET.status == 'Inactive' %}selected{% endif %}>Inactivo</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col gap-3 pt-1 sm:col-span-2 sm:flex-row sm:items-center xl:col-span-4">
+        <div class="flex flex-1 flex-col gap-3 sm:flex-row">
+          <button type="submit" data-loading-label="Aplicando..." class="ui-button-primary">
+            <span data-submit-label>Aplicar filtros</span>
+            <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+          </button>
+          <a href="{% url 'materials:materials_list' %}" class="ui-button-secondary">
+            Limpiar
+          </a>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <a href="?export=csv{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-[#cde2e3] bg-[#f2f8f8] px-5 py-3 text-sm font-semibold text-[#106573] transition hover:bg-[#e8f3f3]">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4m-3 7v2h14v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Exportar CSV
+          </a>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  {% if request.GET.id_material or request.GET.name or request.GET.material_type or request.GET.status %}
+    <div class="mb-5 flex flex-wrap items-center gap-2" aria-label="Filtros activos">
+      <span class="mr-1 text-sm font-semibold text-slate-600">Filtros activos:</span>
+      {% if request.GET.id_material %}
+        <span class="rounded-full bg-[#e8f3f3] px-3 py-1 text-xs font-semibold text-[#106573]">ID: {{ request.GET.id_material }}</span>
+      {% endif %}
+      {% if request.GET.name %}
+        <span class="rounded-full bg-[#e8f3f3] px-3 py-1 text-xs font-semibold text-[#106573]">Nombre: {{ request.GET.name }}</span>
+      {% endif %}
+      {% if request.GET.material_type %}
+        <span class="rounded-full bg-[#e8f3f3] px-3 py-1 text-xs font-semibold text-[#106573]">Tipo: {{ request.GET.material_type }}</span>
+      {% endif %}
+      {% if request.GET.status %}
+        <span class="rounded-full bg-[#e8f3f3] px-3 py-1 text-xs font-semibold text-[#106573]">Estado: {% if request.GET.status == 'Active' %}Activo{% elif request.GET.status == 'Inactive' %}Inactivo{% else %}{{ request.GET.status }}{% endif %}</span>
+      {% endif %}
+      <a href="{% url 'materials:materials_list' %}" class="ml-1 text-xs font-semibold text-[#106573] underline decoration-[#b8d7d9] underline-offset-2 hover:text-[#0c535e]">Quitar filtros</a>
+    </div>
+  {% endif %}
+
+  <section aria-label="Listado de materiales" class="ui-card overflow-hidden">
+    <div class="flex flex-col gap-1 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <h2 class="font-semibold text-slate-900">Listado de materiales</h2>
+      <p class="text-sm text-slate-500">{{ page_obj.paginator.count }} material{{ page_obj.paginator.count|pluralize:"es" }}</p>
+    </div>
+    <p class="px-5 py-2 text-xs text-slate-600 sm:hidden" id="table-scroll-hint">Desliza la tabla horizontalmente para consultar todos los datos.</p>
+    <div class="ui-table-region" role="region" aria-label="Tabla de materiales" aria-describedby="table-scroll-hint" tabindex="0">
+      <table class="w-full divide-y divide-slate-100">
+        <thead class="bg-[#f7fafa]">
+          <tr>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">ID material</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Nombre</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Descripción</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Unidad</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Tipo</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Estado</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Creado por</th>
+            {% if permissions.materials >= 2 %}
+              <th scope="col" class="whitespace-nowrap px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 sm:px-6">Acciones</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for material in page_obj %}
+            <tr class="transition hover:bg-[#f8fbfb]">
+              <td class="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-900 sm:px-6">{{ material.id_material|default:"—" }}</td>
+              <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-slate-700 sm:px-6">{{ material.name|default:"Material sin nombre" }}</td>
+              <td class="max-w-xs truncate px-5 py-4 text-sm text-slate-500 sm:px-6" title="{{ material.description }}">{{ material.description|default:"Sin descripción" }}</td>
+              <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600 sm:px-6">{{ material.unit|default:"—" }}</td>
+              <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600 sm:px-6">{{ material.material_type|default:"—" }}</td>
+              <td class="whitespace-nowrap px-5 py-4 sm:px-6">
+                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {% if material.status == 'Active' %}bg-emerald-50 text-emerald-700{% elif material.status == 'Inactive' %}bg-slate-100 text-slate-600{% else %}bg-amber-50 text-amber-800{% endif %}">
+                  <span class="h-1.5 w-1.5 rounded-full {% if material.status == 'Active' %}bg-emerald-500{% elif material.status == 'Inactive' %}bg-slate-400{% else %}bg-amber-500{% endif %}"></span>
+                  {% if material.status == 'Active' %}Activo{% elif material.status == 'Inactive' %}Inactivo{% else %}{{ material.status|default:"Sin estado" }}{% endif %}
+                </span>
+              </td>
+              <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600 sm:px-6">{{ material.created_by.username|default:"—" }}</td>
+              {% if permissions.materials >= 2 %}
+                <td class="whitespace-nowrap px-5 py-4 text-right text-sm sm:px-6">
+                  <a href="{% url 'materials:material_edit' material.pk %}" class="font-semibold text-[#106573] transition hover:text-[#0c535e]">Editar</a>
+                  <form action="{% url 'materials:material_delete' material.pk %}" method="post" class="ml-3 inline-block" data-loading-form>
+                    {% csrf_token %}
+                    <button type="submit" data-loading-label="Eliminando..." class="ui-button-danger" title="Eliminar material" onclick="return confirm('¿Estás seguro de que deseas eliminar este material?')">
+                      <span data-submit-label>Eliminar</span>
+                      <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+                    </button>
+                  </form>
+                </td>
+              {% endif %}
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="{% if permissions.materials >= 2 %}8{% else %}7{% endif %}" class="px-6 py-12 text-center">
+                <div class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <p class="mt-3 font-semibold text-slate-800">No hay materiales para mostrar</p>
+                {% if request.GET.id_material or request.GET.name or request.GET.material_type or request.GET.status %}
+                  <p class="mt-1 text-sm text-slate-500">Prueba cambiando o limpiando los filtros de búsqueda.</p>
+                {% else %}
+                  <p class="mt-1 text-sm text-slate-500">Cuando registres uno, aparecerá en esta lista.</p>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="flex flex-col items-center justify-between gap-4 border-t border-slate-100 px-5 py-4 sm:flex-row sm:px-6">
+        <p class="text-sm text-slate-500">Mostrando página <span class="font-semibold text-slate-700">{{ page_obj.number }}</span> de <span class="font-semibold text-slate-700">{{ page_obj.paginator.num_pages }}</span></p>
+        <nav class="flex flex-wrap items-center justify-center gap-1" aria-label="Paginación">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Anterior">&lsaquo;</a>
+          {% endif %}
+
+          {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+              <span class="grid h-9 min-w-9 place-items-center rounded-lg bg-[#106573] px-2 text-sm font-semibold text-white" aria-current="page">{{ i }}</span>
+            {% else %}
+              <a href="?page={{ i }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]">{{ i }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Siguiente">&rsaquo;</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Última página">&raquo;</a>
+          {% endif %}
+        </nav>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

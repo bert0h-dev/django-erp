@@ -19,9 +19,9 @@ def login_view(request):
                 login(request, user)
                 return redirect('dashboard')
             else:
-                messages.error(request, 'Invalid username or password.')
+                messages.error(request, 'No se pudo iniciar sesión. Revisa tu usuario y contraseña.')
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'No se pudo iniciar sesión. Revisa tu usuario y contraseña.')
     else:
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
@@ -29,5 +29,5 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    messages.success(request, 'You have been logged out.')
+    messages.success(request, 'Has cerrado sesión correctamente.')
     return redirect('login')

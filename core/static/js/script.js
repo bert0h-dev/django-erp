@@ -10,6 +10,15 @@ if (hamburgerBtn && mobileMenu) {
     hamburgerBtn.setAttribute('aria-label', isExpanded ? 'Abrir menú' : 'Cerrar menú');
     mobileMenu.classList.toggle('hidden', isExpanded);
   });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && hamburgerBtn.getAttribute('aria-expanded') === 'true') {
+      mobileMenu.classList.add('hidden');
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+      hamburgerBtn.setAttribute('aria-label', 'Abrir menú');
+      hamburgerBtn.focus();
+    }
+  });
 }
 
 if (userMenuButton && userMenuDropdown) {
@@ -20,6 +29,37 @@ if (userMenuButton && userMenuDropdown) {
     event.stopPropagation();
   });
 }
+
+if (userMenuButton && userMenuDropdown) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !userMenuDropdown.classList.contains('hidden')) {
+      userMenuDropdown.classList.add('hidden');
+      userMenuButton.setAttribute('aria-expanded', 'false');
+      userMenuButton.focus();
+    }
+  });
+}
+
+document.querySelectorAll('form[data-loading-form]').forEach((form) => {
+  form.addEventListener('submit', () => {
+    const submitButton = form.querySelector('button[type="submit"]:not(:disabled)');
+    if (!submitButton) {
+      return;
+    }
+
+    const label = submitButton.querySelector('[data-submit-label]');
+    const spinner = submitButton.querySelector('.ui-loading-spinner');
+    submitButton.disabled = true;
+    form.setAttribute('aria-busy', 'true');
+
+    if (label) {
+      label.textContent = submitButton.dataset.loadingLabel || 'Procesando...';
+    }
+    if (spinner) {
+      spinner.hidden = false;
+    }
+  });
+});
 
 document.addEventListener('click', (event) => {
   if (userMenuButton && userMenuDropdown) {

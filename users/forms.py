@@ -4,12 +4,20 @@ from .models import User
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
-        label='Username',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your username'})
+        label='Usuario',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Escribe tu usuario',
+            'autocomplete': 'username',
+        })
     )
     password = forms.CharField(
-        label='Password',
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter your password'})
+        label='Contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Escribe tu contraseña',
+            'autocomplete': 'current-password',
+        })
     )
 
     class Meta:

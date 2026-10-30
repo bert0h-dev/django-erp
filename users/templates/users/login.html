@@ -10,33 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-      body {
-        font-family: 'DM Sans', sans-serif;
-      }
-      
-      .form-control {
-        width: 100%;
-        border: 1px solid #dbe3e5;
-        border-radius: 0.875rem;
-        background: #fff;
-        padding: 0.9rem 1rem;
-        color: #111827;
-        outline: none;
-        transition: border-color 150ms ease, box-shadow 150ms ease;
-      }
-      
-      .form-control::placeholder {
-        color: #9aa8ab;
-      }
-      
-      .form-control:focus {
-        border-color: #106573;
-        box-shadow: 0 0 0 4px #1065731f;
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
   </head>
-  <body class="min-h-screen bg-[#f2f6f6] font-sans text-slate-900 antialiased">
+  <body class="min-h-screen bg-[#f2f6f6] text-slate-900 antialiased">
+    <a class="ui-skip-link" href="#login-form">Saltar al formulario de inicio de sesión</a>
     <main class="flex min-h-screen items-center justify-center p-4 sm:p-8">
       <div class="grid w-full max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-[0_32px_100px_-40px_rgba(16,54,60,0.35)] lg:min-h-[680px] lg:grid-cols-[1.05fr_0.95fr]">
         <section class="relative flex min-h-64 flex-col justify-between overflow-hidden bg-[#106573] p-8 text-white sm:p-12 lg:p-14">
@@ -45,9 +22,7 @@
           <div class="absolute right-12 top-24 h-44 w-44 rounded-full bg-[#70c5bd]/10 blur-3xl"></div>
 
           <div class="relative flex items-center gap-3">
-            <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20">
-              <img src="{% static 'img/logo_2.svg' %}" alt="" class="h-10 w-10 object-contain" />
-            </span>
+            <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20"><img src="{% static 'img/logo_2.svg' %}" alt="" class="h-10 w-10 object-contain" /></span>
             <span class="text-sm font-bold tracking-[0.16em]">ERP PROJECT</span>
           </div>
 
@@ -80,14 +55,14 @@
             </div>
 
             {% for message in messages %}
-              <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">{{ message }}</div>
+              <div class="mb-5 {% if message.tags == 'success' %}ui-status-success{% elif message.tags == 'warning' %}ui-status-warning{% elif message.tags == 'error' %}ui-status-error{% else %}ui-status-neutral{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
             {% endfor %}
 
             {% if form.non_field_errors %}
-              <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">{{ form.non_field_errors }}</div>
+              <div class="ui-status-error mb-5" role="alert">{{ form.non_field_errors }}</div>
             {% endif %}
 
-            <form method="post" class="space-y-5">
+            <form id="login-form" method="post" class="space-y-5" data-loading-form tabindex="-1">
               {% csrf_token %}
               <div>
                 <label for="{{ form.username.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Usuario</label>
@@ -105,14 +80,16 @@
                 {% endfor %}
               </div>
 
-              <button type="submit" class="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#106573] px-4 py-3.5 font-semibold text-white shadow-lg shadow-[#106573]/20 transition hover:bg-[#0c535e] focus:outline-none focus:ring-4 focus:ring-[#106573]/20">
-                Entrar a mi cuenta<svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <button type="submit" data-loading-label="Iniciando sesión..." class="ui-button-primary group w-full">
+                <span data-submit-label>Entrar a mi cuenta</span>
+                <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+                <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
             </form>
 
-            <p class="mt-8 text-center text-xs leading-5 text-slate-400">Acceso exclusivo para usuarios autorizados.</p>
+            <p class="mt-8 text-center text-xs leading-5 text-slate-500">Acceso exclusivo para usuarios autorizados.</p>
           </div>
         </section>
       </div>
