@@ -1,96 +1,164 @@
 {% extends 'core/base.html' %}
 
-{% load static %}
-
 {% block title %}{% if material %}Editar material{% else %}Crear material{% endif %}{% endblock %}
 
 {% block content %}
-  <section class="mb-8">
-    <a href="{% url 'materials:materials_list' %}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#106573] transition hover:text-[#0c535e]">
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
+  <section>
+    <a href="{% url 'materials:materials_list' %}" class="portal-reveal portal-sticker tone-card transition hover:-rotate-2" style="--delay: 0ms">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
       Volver a materiales
     </a>
-    <p class="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#106573]">Catálogo</p>
-    <h1 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{% if material %}Editar material{% else %}Crear material{% endif %}</h1>
-    <p class="mt-2 text-slate-500">Completa la información del material en el formulario.</p>
+    <p class="portal-reveal portal-eyebrow mt-8" style="--delay: 40ms">Catálogo</p>
+    <h1 class="portal-reveal portal-display mt-4 text-6xl sm:text-7xl" style="--delay: 80ms">
+      {% if material %}Editar <span class="portal-marker">{{ material }}</span>{% else %}Nuevo <span class="portal-marker">material</span>{% endif %}
+    </h1>
+    <p class="portal-reveal portal-muted mt-4 text-lg" style="--delay: 120ms">
+      {% if material %}Actualiza la información del material.{% else %}Completa la información y mira cómo queda su etiqueta.{% endif %}
+    </p>
   </section>
 
-  <section class="ui-card mx-auto max-w-3xl overflow-hidden">
-    <div class="border-b border-slate-100 px-6 py-5 sm:px-8">
-      <h2 class="font-semibold text-slate-900">Información del material</h2>
-      <p class="mt-1 text-sm text-slate-500">Los campos se pueden actualizar posteriormente.</p>
-    </div>
-    <form method="post" class="p-6 sm:p-8" data-loading-form>
+  <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <!-- Formulario -->
+    <form method="post" class="portal-reveal portal-card p-6 sm:p-8" style="--delay: 160ms" data-loading-form data-material-form novalidate>
       {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="ui-status-error mb-6" role="alert">{{ form.non_field_errors }}</div>
-      {% endif %}
 
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div>
-          <label for="{{ form.id_material.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">ID de material</label>
-          <input type="text" name="{{ form.id_material.html_name }}" id="{{ form.id_material.id_for_label }}" value="{{ form.id_material.value|default:'' }}" class="ui-field" {% if form.id_material.errors %}aria-invalid="true" aria-describedby="id_material_errors"{% endif %} />
-          {% if form.id_material.errors %}
-            <div id="id_material_errors" class="mt-2 text-sm text-rose-700">{{ form.id_material.errors }}</div>
-          {% endif %}
+      {% for error in form.non_field_errors %}
+        <div class="portal-alert portal-alert--error mb-6" role="alert">{{ error }}</div>
+      {% endfor %}
+
+      <fieldset>
+        <legend class="portal-sticker tone-lime">1 · Identificación</legend>
+        <div class="mt-5 grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
+          <div>
+            <label for="{{ form.id_material.id_for_label }}" class="portal-label">ID de material</label>
+            <div class="portal-field-wrap">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+              <input type="text" name="{{ form.id_material.html_name }}" id="{{ form.id_material.id_for_label }}" value="{{ form.id_material.value|default:'' }}" placeholder="MP-001" maxlength="50" required autocomplete="off" spellcheck="false" class="portal-field font-mono" data-preview-source="id" {% if form.id_material.errors %}aria-invalid="true" aria-describedby="id_material_errors"{% endif %} />
+            </div>
+            {% if form.id_material.errors %}<div id="id_material_errors" class="portal-field-error">{% for error in form.id_material.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
+
+          <div>
+            <label for="{{ form.name.id_for_label }}" class="portal-label">Nombre</label>
+            <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" placeholder="Ej. Harina de trigo" maxlength="100" class="portal-field" data-preview-source="name" {% if form.name.errors %}aria-invalid="true" aria-describedby="id_name_errors"{% endif %} />
+            {% if form.name.errors %}<div id="id_name_errors" class="portal-field-error">{% for error in form.name.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
         </div>
 
-        <div>
-          <label for="{{ form.name.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Nombre</label>
-          <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" class="ui-field" {% if form.name.errors %}aria-invalid="true" aria-describedby="id_name_errors"{% endif %} />
-          {% if form.name.errors %}
-            <div id="id_name_errors" class="mt-2 text-sm text-rose-700">{{ form.name.errors }}</div>
-          {% endif %}
+        <div class="mt-5">
+          <div class="flex items-baseline justify-between">
+            <label for="{{ form.description.id_for_label }}" class="portal-label">Descripción <span class="portal-subtle font-normal">(opcional)</span></label>
+            <span class="portal-subtle font-mono text-xs tabular-nums" aria-live="polite" data-char-count>{{ form.description.value|default:''|length }}/250</span>
+          </div>
+          <textarea name="{{ form.description.html_name }}" id="{{ form.description.id_for_label }}" rows="3" maxlength="250" placeholder="Detalles que ayuden a identificarlo" class="portal-field" data-preview-source="description" {% if form.description.errors %}aria-invalid="true" aria-describedby="id_description_errors"{% endif %}>{{ form.description.value|default:'' }}</textarea>
+          {% if form.description.errors %}<div id="id_description_errors" class="portal-field-error">{% for error in form.description.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+        </div>
+      </fieldset>
+
+      <fieldset class="mt-9 border-t-2 border-dashed border-[var(--ink)] pt-8">
+        <legend class="sr-only">Clasificación</legend>
+        <p class="portal-sticker tone-lilac" aria-hidden="true">2 · Clasificación</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="{{ form.unit.id_for_label }}" class="portal-label">Unidad de medida</label>
+            <input type="text" name="{{ form.unit.html_name }}" id="{{ form.unit.id_for_label }}" value="{{ form.unit.value|default:'' }}" placeholder="kg, L, pza…" maxlength="50" required list="unit-options" autocomplete="off" class="portal-field" data-preview-source="unit" {% if form.unit.errors %}aria-invalid="true" aria-describedby="id_unit_errors"{% endif %} />
+            <datalist id="unit-options">
+              <option value="kg"></option>
+              <option value="g"></option>
+              <option value="L"></option>
+              <option value="ml"></option>
+              <option value="m"></option>
+              <option value="m²"></option>
+              <option value="pza"></option>
+              <option value="caja"></option>
+            </datalist>
+            {% if form.unit.errors %}<div id="id_unit_errors" class="portal-field-error">{% for error in form.unit.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
+
+          <div>
+            <label for="{{ form.material_type.id_for_label }}" class="portal-label">Tipo de material</label>
+            <input type="text" name="{{ form.material_type.html_name }}" id="{{ form.material_type.id_for_label }}" value="{{ form.material_type.value|default:'' }}" placeholder="Escribe o elige uno" maxlength="50" required list="type-options" autocomplete="off" class="portal-field" data-preview-source="type" {% if form.material_type.errors %}aria-invalid="true" aria-describedby="id_material_type_errors"{% endif %} />
+            <datalist id="type-options">
+              {% for material_type in material_types %}<option value="{{ material_type }}"></option>{% endfor %}
+            </datalist>
+            <p class="portal-hint">Usa un tipo existente para que el filtro de la lista los agrupe.</p>
+            {% if form.material_type.errors %}<div id="id_material_type_errors" class="portal-field-error">{% for error in form.material_type.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
         </div>
 
-        <div class="sm:col-span-2">
-          <label for="{{ form.description.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Descripción</label>
-          <textarea name="{{ form.description.html_name }}" id="{{ form.description.id_for_label }}" rows="3" class="ui-field" {% if form.description.errors %}aria-invalid="true" aria-describedby="id_description_errors"{% endif %}>{{ form.description.value|default:'' }}</textarea>
-          {% if form.description.errors %}
-            <div id="id_description_errors" class="mt-2 text-sm text-rose-700">{{ form.description.errors }}</div>
-          {% endif %}
+        <div class="mt-6">
+          <p id="status-label" class="portal-label">Estado</p>
+          <div class="portal-segmented" role="radiogroup" aria-labelledby="status-label">
+            <input type="radio" name="{{ form.status.html_name }}" id="status-active" value="Active" {% if form.status.value == 'Active' %}checked{% endif %} data-preview-source="status" />
+            <label for="status-active">Activo</label>
+            <input type="radio" name="{{ form.status.html_name }}" id="status-inactive" value="Inactive" {% if form.status.value == 'Inactive' %}checked{% endif %} data-preview-source="status" />
+            <label for="status-inactive">Inactivo</label>
+          </div>
+          {% if form.status.errors %}<div class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
         </div>
+      </fieldset>
 
-        <div>
-          <label for="{{ form.unit.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Unidad</label>
-          <input type="text" name="{{ form.unit.html_name }}" id="{{ form.unit.id_for_label }}" value="{{ form.unit.value|default:'' }}" class="ui-field" {% if form.unit.errors %}aria-invalid="true" aria-describedby="id_unit_errors"{% endif %} />
-          {% if form.unit.errors %}
-            <div id="id_unit_errors" class="mt-2 text-sm text-rose-700">{{ form.unit.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div>
-          <label for="{{ form.material_type.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Tipo de material</label>
-          <input type="text" name="{{ form.material_type.html_name }}" id="{{ form.material_type.id_for_label }}" value="{{ form.material_type.value|default:'' }}" class="ui-field" {% if form.material_type.errors %}aria-invalid="true" aria-describedby="id_material_type_errors"{% endif %} />
-          {% if form.material_type.errors %}
-            <div id="id_material_type_errors" class="mt-2 text-sm text-rose-700">{{ form.material_type.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="sm:col-span-2">
-          <label for="{{ form.status.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Estado</label>
-          <select name="{{ form.status.html_name }}" id="{{ form.status.id_for_label }}" class="ui-field" {% if form.status.errors %}aria-invalid="true" aria-describedby="id_status_errors"{% endif %}>
-            <option value="Active" {% if form.status.value == 'Active' %}selected{% endif %}>Activo</option>
-            <option value="Inactive" {% if form.status.value == 'Inactive' %}selected{% endif %}>Inactivo</option>
-          </select>
-          {% if form.status.errors %}
-            <div id="id_status_errors" class="mt-2 text-sm text-rose-700">{{ form.status.errors }}</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <div class="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
-        <a href="{% url 'materials:materials_list' %}" class="ui-button-secondary">
-          Cancelar
-        </a>
-        <button type="submit" data-loading-label="{% if material %}Guardando cambios...{% else %}Creando material...{% endif %}" class="ui-button-primary">
+      <div class="mt-9 flex flex-col-reverse gap-3 border-t-2 border-dashed border-[var(--ink)] pt-6 sm:flex-row sm:justify-end">
+        <a href="{% url 'materials:materials_list' %}" class="portal-button-secondary">Cancelar</a>
+        <button type="submit" data-loading-label="{% if material %}Guardando...{% else %}Creando...{% endif %}" class="portal-button">
           <span data-submit-label>{% if material %}Guardar cambios{% else %}Crear material{% endif %}</span>
           <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
         </button>
       </div>
-      <input type="hidden" name="{{ form.created_by_id.html_name }}" value="{{ user.username }}" />
     </form>
-  </section>
+
+    <!-- Etiqueta de almacén (vista previa en vivo) y registro -->
+    <aside class="space-y-8 lg:sticky lg:top-28 lg:self-start" aria-label="Vista previa">
+      <div class="portal-reveal" style="--delay: 240ms">
+        <p class="portal-eyebrow mb-4">Así se verá su etiqueta</p>
+        <div class="portal-ticket">
+          <span class="portal-ticket__hole" aria-hidden="true"></span>
+          <div class="px-6 pb-5 pt-12">
+            <div class="flex items-start justify-between gap-3">
+              <span class="portal-code !bg-[var(--card)] text-sm" data-preview="id" data-empty="SIN-ID">{{ form.id_material.value|default:'SIN-ID' }}</span>
+              <span data-preview="status">
+                {% if form.status.value == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--active">Activo</span>{% endif %}
+              </span>
+            </div>
+            <p class="portal-display mt-5 break-words text-3xl" data-preview="name" data-empty="Material sin nombre">{{ form.name.value|default:'Material sin nombre' }}</p>
+            <p class="mt-2 break-words text-sm font-medium leading-6" data-preview="description" data-empty="Sin descripción">{{ form.description.value|default:'Sin descripción' }}</p>
+          </div>
+          <div class="portal-ticket__tear"></div>
+          <div class="px-6 pb-6 pt-5">
+            <dl class="grid grid-cols-2 gap-3 font-mono text-sm">
+              <div>
+                <dt class="text-[0.68rem] font-semibold uppercase tracking-[0.1em]">Unidad</dt>
+                <dd class="mt-1 truncate font-bold" data-preview="unit" data-empty="—">{{ form.unit.value|default:'—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-[0.68rem] font-semibold uppercase tracking-[0.1em]">Tipo</dt>
+                <dd class="mt-1 truncate font-bold" data-preview="type" data-empty="—">{{ form.material_type.value|default:'—' }}</dd>
+              </div>
+            </dl>
+            <div class="portal-barcode mt-5" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      {% if material %}
+        <div class="portal-reveal portal-card tone-card p-6" style="--delay: 300ms">
+          <p class="portal-eyebrow">Registro</p>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Creado por</dt>
+              <dd class="font-bold">{{ material.created_by.username|default:"—" }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Creado</dt>
+              <dd class="font-mono font-bold"><time datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:"j M Y, H:i" }}</time></dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Última edición</dt>
+              <dd class="font-mono font-bold"><time datetime="{{ material.updated_at|date:'c' }}">{{ material.updated_at|date:"j M Y, H:i" }}</time></dd>
+            </div>
+          </dl>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
 {% endblock %}

@@ -1,0 +1,16 @@
+{% load static %}<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f3eee3" />
+    <script>
+      // Aplica el color de acento guardado antes de pintar, para evitar un parpadeo
+      try {
+        const accent = localStorage.getItem('erp-accent');
+        if (accent) document.documentElement.dataset.accent = accent;
+      } catch (error) {}
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}" />

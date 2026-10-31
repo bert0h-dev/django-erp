@@ -1,57 +1,181 @@
 # Frontend
 
+Diseño actual: **"Taller"** (2026-10-31). Papel crema con retícula de puntos, tinta
+negra, bordes de 2 px, sombras sólidas desplazadas (estilo neo-brutalista) y un color
+propio por módulo. Sustituye al tema oscuro del 2026-10-30.
+
 ## Plantillas
 
 | Plantilla | Extiende | Uso |
 | --- | --- | --- |
-| `core/templates/core/base.html` | — | Layout: header teal, menú de usuario, menú móvil, mensajes, `{% block content %}`. "Cerrar sesión" es un `<form method="post">` con CSRF en ambos menús |
-| `core/templates/core/dashboard.html` | base | Tarjetas de módulos según `permissions` |
-| `users/templates/users/login.html` | — (HTML propio) | Pantalla de login |
-| `materials/templates/materials/materials_list.html` | base | Filtros, chips de filtros activos, tabla, paginación, export CSV |
-| `materials/templates/materials/material_form.html` | base | Alta y edición (cambia textos si existe `material`) |
+| `core/templates/core/_head.html` | — (parcial) | `<meta>`, script que aplica el acento guardado antes de pintar, Tailwind CDN, fuentes, `app.css` y `portal.css`. Lo incluyen `base.html` y el login |
+| `core/templates/core/_accent_picker.html` | — (parcial) | Selector de color de acento (5 muestras) |
+| `core/templates/core/base.html` | — | Barra superior flotante, menú móvil, mensajes, `{% block content %}` y pie |
+| `core/templates/core/dashboard.html` | base | Saludo, cifras, módulos y materiales recientes |
+| `users/templates/users/login.html` | — (HTML propio) | Login |
+| `materials/templates/materials/materials_list.html` | base | Resumen, filtros, tabla / tarjetas, paginación, diálogo de borrado |
+| `materials/templates/materials/material_form.html` | base | Alta y edición con etiqueta de almacén en vivo |
+| `materials/templates/materials/_status.html` | — (parcial) | Etiqueta de estado de un material |
+| `materials/templates/materials/_row_actions.html` | — (parcial) | Editar / eliminar de cada fila |
 
-Bloques de `base.html`: `title` y `content`.
+Bloques de `base.html`: `title` (se muestra como "<title> | ERP Project") y `content`.
 
-En el dashboard solo la tarjeta de **Materiales** enlaza a una ruta real; las demás
-(Clientes, Proveedores, Compras, Ventas, Inventario, Contabilidad, Reportes) usan
-`href="#"`. El menú de `base.html` solo tiene Dashboard, Materiales y Cerrar sesión.
+## Sistema de diseño: `core/static/css/portal.css`
 
-## Estilos
+Todo el color sale de variables CSS; las plantillas usan clases semánticas y no
+valores hexadecimales. Para cambiar la paleta basta con editar los tokens de `:root`.
 
-- Color principal `#106573`; hover `#0c535e`; fondo `#f2f6f6`; acentos `#e8f3f3`,
-  `#b8d7d9`.
-- Tailwind por CDN (JIT en el navegador; requiere Internet, no apto para producción).
-- `core/static/css/app.css` define componentes reutilizables: `ui-field`,
-  `ui-button-primary`, `ui-button-secondary`, `ui-button-danger`, `ui-status-error`,
-  `ui-loading-spinner`, `ui-skip-link`, entre otros. Usarlos en vez de repetir clases.
-- Accesibilidad cuidada: skip links, `aria-expanded`, `aria-invalid`,
-  `aria-describedby`, `role="alert"`.
+### Tokens
 
-## JavaScript (`core/static/js/script.js`)
+| Variable | Valor | Uso |
+| --- | --- | --- |
+| `--paper` / `--paper-2` | `#f3eee3` / `#e8e0cf` | Fondo de página / fondos apagados |
+| `--card` | `#fffdf8` | Tarjetas y campos |
+| `--ink` / `--ink-2` / `--ink-3` | `#16130f` / `#4a443b` / `#6b6457` | Texto, bordes y sombras / texto secundario / pistas |
+| `--lime`, `--lilac`, `--sky`, `--pink`, `--tangerine`, `--sun`, `--mint`, `--coral` | — | Colores de módulos y tarjetas |
+| `--accent` | `--tangerine` por defecto | Color de acento elegido por el usuario |
+| `--danger` | `#e5383b` | Botón de eliminar |
+| `--shadow`, `--shadow-lg`, `--shadow-sm` | `4px` / `7px` / `2px` sólidas en `--ink` | Sombras |
 
-- Menú hamburguesa (`#hamburger-btn` / `#mobile-menu`), cierra con Escape.
-- Menú de usuario (`#user-menu-button` / `#user-menu-dropdown`), cierra con Escape o
-  clic fuera.
-- Formularios con atributo `data-loading-form`: al enviar deshabilitan el botón submit,
-  ponen `aria-busy`, cambian el texto de `[data-submit-label]` por
-  `data-loading-label` y muestran `.ui-loading-spinner`.
+Fuentes (Google Fonts): **Bricolage Grotesque** (`--font-display`, títulos),
+**Instrument Sans** (`--font-body`) y **JetBrains Mono** (`--font-mono`, códigos y
+etiquetas).
 
-## Patrón de formularios
+### Clases principales
 
-`material_form.html` renderiza cada campo a mano (`<input name="{{ form.x.html_name }}"
-value="{{ form.x.value|default:'' }}">`) en lugar de `{{ form.x }}`. Consecuencias:
+- **Tonos:** `tone-lime`, `tone-lilac`, `tone-sky`, `tone-pink`, `tone-tangerine`,
+  `tone-sun`, `tone-mint`, `tone-coral`, `tone-accent`, `tone-card`, `tone-paper`,
+  `tone-ink`. Están **al final del archivo** para ganar a los fondos de los
+  componentes; no moverlas.
+- **Texto:** `portal-display` (títulos grandes), `portal-eyebrow` (rótulo mono con
+  punto de acento), `portal-marker` (subrayado de rotulador con el acento),
+  `portal-muted`, `portal-subtle`.
+- **Superficies:** `portal-card` (+ `portal-card--lift` para elevar al pasar el
+  cursor), `portal-sticker` (etiqueta tipo pegatina), `portal-reveal` (entrada con
+  `--delay`).
+- **Navegación:** `portal-topbar`, `portal-brand`, `portal-navpill`, `portal-dot`,
+  `portal-avatar`, `portal-icon-button`, `portal-swatches` / `portal-swatch`,
+  `portal-sheet` (menú móvil), `portal-scrim`.
+- **Datos:** `portal-stat` (+ `__value`, `__label`, `__icon`), `portal-meter` (barra
+  rayada con el acento), `portal-module` (+ `__icon`, `__name`, `__arrow`,
+  `--soon` con rayado de "en obra"), `portal-badge` (+ `--ink`, `--building`),
+  `portal-status--active|inactive|other`, `portal-code`, `portal-table`,
+  `portal-page-link`.
+- **Formularios:** `portal-label`, `portal-field`, `portal-field-wrap` (campo con
+  icono), `portal-segmented`, `portal-field-error`, `portal-hint`, `portal-filter-chip`.
+- **Botones:** `portal-button` (tinta; al pasar el cursor toma el acento),
+  `portal-button-secondary`, `portal-button-danger`, `portal-icon-action`
+  (+ `--danger`).
+- **Otros:** `portal-alert--success|warning|error`, `portal-dialog`, `portal-ticket`
+  (+ `__hole`, `__tear`) y `portal-barcode` para la etiqueta de almacén,
+  `portal-marquee` (cinta en movimiento), `portal-spin` (sello giratorio).
 
-- Los atributos que Django pondría (`maxlength`, `required`) no se aplican.
-- `status` es un `<select>` con `Active`/`Inactive` en HTML, pero el modelo acepta
-  cualquier texto.
+`app.css` conserva la base heredada; de él solo se usan `ui-skip-link`,
+`ui-loading-spinner` y la regla global de `prefers-reduced-motion`, que desactiva
+todas las animaciones.
 
-## Detalles de la lista de materiales
+### Color de acento
 
-- El select de "Tipo de material" itera `all_material_types`: lista de valores
-  distintos de `material_type` que envía la vista. El filtro por tipo es exacto.
-- Los enlaces de paginación y de export CSV usan la etiqueta `{% querystring %}`
-  (Django ≥ 5.1), que conserva y codifica los filtros actuales:
-  `{% querystring page=i %}`, `{% querystring export='csv' page=None %}`.
-- Al final del formulario hay `<input type="hidden" name="{{ form.created_by_id.html_name }}">`;
-  ese campo no existe en `MaterialForm`, así que genera un input sin nombre que no hace
-  nada. `created_by` se asigna correctamente en la vista.
+El usuario elige entre mandarina, lila, lima, cielo y rosa desde la barra superior,
+el menú móvil o el login. `script.js` guarda la elección en `localStorage`
+(`erp-accent`) y pone `data-accent` en `<html>`; `_head.html` lo aplica antes de pintar.
+Es una preferencia por navegador, no se guarda en el servidor.
+
+## JavaScript: `core/static/js/script.js`
+
+Va dentro de un bloque `{ ... }` para que sus constantes no choquen con las de
+`users/js/login.js`.
+
+- Selector de acento (`[data-accent-option]`).
+- Menú móvil (`#menu-toggle`, `#portal-sheet`, `#sheet-scrim`, `[data-sheet-close]`;
+  cierra con Escape, clic fuera o al pasar a escritorio).
+- Confirmación con `<dialog id="confirm-dialog">` para `form[data-confirm="<nombre>"]`.
+  Si el navegador no soporta `<dialog>`, el formulario se envía sin confirmar.
+- Vista previa en vivo y contador de caracteres en `[data-material-form]`
+  (`data-preview-source` en los campos → `data-preview` en la etiqueta; `data-empty`
+  es el texto cuando el campo está vacío).
+- Estado de carga en `form[data-loading-form]` (se salta si otro listener canceló el
+  envío).
+
+## Estructura de `base.html`
+
+- **Barra superior flotante** (píldora): logo, "Inicio" y los módulos disponibles del
+  usuario (con su punto de color), selector de acento, avatar con nombre y roles, y
+  botón de cerrar sesión (formulario POST). El enlace activo se marca comparando
+  `request.resolver_match.namespace` con la clave del módulo.
+- **Menú móvil** (`< lg`): panel que baja desde arriba con todos los módulos del
+  usuario; los que no tienen pantallas aparecen con borde punteado y "En obra" o
+  "Pronto".
+- **Pie:** año y fecha actual.
+
+## Catálogo de módulos: `core/modules.py`
+
+`MODULE_CATALOG` define para cada módulo `key` (= campo de `Role`), `color` (sufijo de
+la clase `tone-*`), `name`, `description`, `url_name` (o `None`), `status` (`live` /
+`building` / `soon`) e `icon` (contenido interno de un `<svg viewBox="0 0 24 24">`).
+`get_user_modules()` devuelve los que el usuario puede ver con su `level`; el context
+processor lo expone como `user_modules`.
+
+| Módulo | Color |
+| --- | --- |
+| Materiales | lima |
+| Proveedores | lila |
+| Clientes | cielo |
+| Compras | rosa |
+| Ventas | mandarina |
+| Inventario | sol |
+| Contabilidad | menta |
+| Reportes | coral |
+
+Cuando un módulo tenga pantallas: poner su `url_name`, cambiar `status` a `live` y
+usar `app_name = '<key>'` en su `urls.py`.
+
+## Dashboard
+
+Datos reales, sin cifras inventadas:
+
+- Saludo grande en el color de acento, con los roles como pegatinas y un sello
+  giratorio decorativo.
+- Cifras: módulos con acceso (`readable_count` / `module_total`), con escritura
+  (`writable_count`) y, si el usuario ve materiales, total y activos
+  (`materials_summary`). Si no, número de roles.
+- "Tus módulos": los disponibles en su color y con flecha; los demás en blanco con
+  rayado y borde punteado.
+- "Lo último": los 5 materiales más recientes.
+
+## Login
+
+- `users/templates/users/login.html`, `users/static/users/css/login.css` (mosaico de
+  módulos, botón de mostrar contraseña, aviso de Bloq Mayús) y
+  `users/static/users/js/login.js` (mostrar contraseña y Bloq Mayús).
+- Titular con "lugar." subrayado con el acento, mosaico decorativo (`aria-hidden`) con
+  el estado real de cada módulo (actualizarlo a mano si cambia), tarjeta con el
+  formulario, selector de color y cinta inferior con los módulos.
+- Errores: solo `form.non_field_errors` y los errores de campo; el mensaje de
+  credenciales inválidas está en `LoginForm.error_messages['invalid_login']`.
+
+## Materiales
+
+### Lista (`materials_list.html`)
+
+- Título con subrayado de acento, "Exportar CSV" (respeta los filtros) y "Crear
+  material" (solo nivel 2).
+- Resumen del catálogo completo, sin filtros (`summary`): total, activos, inactivos y
+  tipos.
+- Filtros con icono; botón de limpiar solo si hay filtros (`has_filters`). Cada filtro
+  activo es una etiqueta con ✕ que lo quita con `{% querystring <campo>=None page=None %}`.
+- Tabla con cabecera en tinta (`md` o más); en móvil, lista de tarjetas.
+- Eliminar abre el diálogo de confirmación.
+
+### Formulario (`material_form.html`)
+
+- Campos escritos a mano (no `{{ form.campo }}`) para controlar clases, `aria-*`,
+  `maxlength` y `required`.
+- Unidad con sugerencias fijas (`<datalist id="unit-options">`) y tipo con los tipos
+  existentes (`material_types`, que envían `material_create` y `material_edit`).
+- Estado como interruptor Activo / Inactivo; al crear, la vista pone
+  `initial={'status': 'Active'}`.
+- Columna derecha: **etiqueta de almacén** en el color de acento (agujero, línea de
+  corte, código de barras decorativo) que se actualiza al escribir y, al editar,
+  creador y fechas.
+- Las fechas se muestran en UTC (`TIME_ZONE = 'UTC'`).

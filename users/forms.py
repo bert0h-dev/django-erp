@@ -3,6 +3,11 @@ from django.contrib.auth.forms import AuthenticationForm
 from .models import User
 
 class LoginForm(AuthenticationForm):
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        'invalid_login': 'No se pudo iniciar sesión. Revisa tu usuario y contraseña.',
+    }
+
     username = forms.CharField(
         label='Usuario',
         widget=forms.TextInput(attrs={

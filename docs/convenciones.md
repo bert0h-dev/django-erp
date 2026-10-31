@@ -27,11 +27,14 @@
    `?export=csv` con BOM UTF-8, enlaces con `{% querystring %}`),
    crear (asigna `created_by = request.user`), editar, borrar solo por POST. Validar el
    permiso del módulo **antes** de cargar el objeto.
-6. Plantillas en `<modulo>/templates/<modulo>/` extendiendo `core/base.html` y usando
-   las clases `ui-*` de `app.css` y `data-loading-form`.
+6. Plantillas en `<modulo>/templates/<modulo>/` extendiendo `core/base.html`, con las
+   clases `portal-*` de `core/static/css/portal.css` y `data-loading-form`. Tomar como
+   modelo `materials_list.html` (lista, filtros, tabla y tarjetas móviles, diálogo de
+   borrado con `data-confirm`) y `material_form.html` (formulario con vista previa).
 7. Incluir las URLs en `erp_project/urls.py`.
-8. Enlazar la tarjeta del dashboard (`core/templates/core/dashboard.html`) y añadir la
-   entrada al menú de `base.html` condicionada a `permissions.<modulo> > 0`.
+8. En `core/modules.py`, poner el `url_name` del módulo y `status = 'live'`: la tarjeta
+   del dashboard y la entrada de la barra superior se activan solas, con el color
+   (`color`) asignado al módulo.
 9. Si el módulo es nuevo en `Role`: añadir el campo, su nombre en
    `users.permissions.MODULES` y en `RoleAdmin.list_display`, y migrar. En las vistas,
    validar con `get_module_permission(request.user, '<modulo>')`.

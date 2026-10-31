@@ -1,187 +1,156 @@
 {% extends 'core/base.html' %}
-{% block title %}
-  Panel principal
-{% endblock %}
+{% block title %}Inicio{% endblock %}
 {% block content %}
-  <section class="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-    <div>
-      <p class="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#106573]">Tu espacio de trabajo</p>
-      <h1 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Hola, {{ user.first_name|default:user.username }}</h1>
-      <p class="mt-2 text-slate-500">Accede rápidamente a los módulos disponibles para tu cuenta.</p>
-    </div>
-    <div class="inline-flex w-fit items-center gap-2 rounded-full border border-[#d6e8e8] bg-white px-3.5 py-2 text-sm text-slate-600 shadow-sm">
-      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-      Sesión activa
-    </div>
-  </section>
-
-  <section aria-labelledby="modules-heading">
-    <div class="mb-4 flex items-center justify-between">
-      <h2 id="modules-heading" class="text-lg font-semibold text-slate-900">Módulos</h2>
-      {% if roles %}
-        <p class="text-sm text-slate-500">Rol{{ roles|length|pluralize }}: {{ roles|join:', ' }}</p>
-      {% endif %}
-    </div>
-
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {% if permissions.materials > 0 %}
-        <a href="{% url 'materials:materials_list' %}" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Materiales</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.materials == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.customers > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m12-13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm2 5a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M17 4a4 4 0 0 1 0 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Clientes</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.customers == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.suppliers > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-              <circle cx="7.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" />
-              <circle cx="17.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Proveedores</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.suppliers == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.purchases > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="9" cy="21" r="1" stroke="currentColor" stroke-width="1.7" />
-              <circle cx="19" cy="21" r="1" stroke="currentColor" stroke-width="1.7" />
-              <path d="M2 3h2l2.5 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L22 8H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Compras</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.purchases == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.sales > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m3 17 6-6 4 4 8-9m-6 0h6v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Ventas</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.sales == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.inventory > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 5v8l9 5 9-5V8m-9 5v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Inventario</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.inventory == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.accounting > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M9 8h6m-6 4h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Contabilidad</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.accounting == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-
-      {% if permissions.reporting > 0 %}
-        <a href="#" class="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#b8d7d9] hover:shadow-lg hover:shadow-[#106573]/10">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f3f3] text-[#106573]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 19V5m0 14h17M8 15v-4m5 4V7m5 8v-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <h3 class="font-semibold text-slate-900 group-hover:text-[#106573]">Reportes</h3>
-          <p class="mt-1 text-sm text-slate-500">
-            {% if permissions.reporting == 1 %}
-              Solo lectura
-            {% else %}
-              Lectura y escritura
-            {% endif %}
-          </p>
-        </a>
-      {% endif %}
-    </div>
-
-    {% if permissions.materials == 0 and permissions.customers == 0 and permissions.suppliers == 0 and permissions.purchases == 0 and permissions.sales == 0 and permissions.inventory == 0 and permissions.accounting == 0 and permissions.reporting == 0 %}
-      <div class="ui-status-warning mt-6" role="status">
-        <div>
-          <h3 class="font-semibold">Aún no tienes módulos asignados</h3>
-          <p class="mt-1 text-sm">Pide al administrador que configure los permisos de tu cuenta.</p>
-        </div>
+  <div class="grid gap-5 lg:grid-cols-12">
+    <!-- Saludo -->
+    <section class="portal-reveal portal-card tone-accent relative overflow-hidden p-7 sm:p-9 lg:col-span-7" style="--delay: 0ms" aria-labelledby="dashboard-title">
+      <p class="portal-eyebrow text-[var(--ink)]">Tu espacio de trabajo</p>
+      <h1 id="dashboard-title" class="portal-display mt-5 text-6xl sm:text-7xl xl:text-8xl">
+        Hola,<br />{{ user.first_name|default:user.username }}.
+      </h1>
+      <p class="mt-5 max-w-md text-base font-medium sm:text-lg">Tus módulos, tus permisos y lo último que se registró, todo aquí.</p>
+      <div class="mt-7 flex flex-wrap gap-2">
+        {% for role in roles %}
+          <span class="portal-sticker tone-card">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            {{ role }}
+          </span>
+        {% empty %}
+          <span class="portal-sticker tone-card">Sin rol asignado</span>
+        {% endfor %}
       </div>
-    {% endif %}
-  </section>
+      <!-- Sello decorativo -->
+      <svg class="pointer-events-none absolute -bottom-10 -right-10 h-48 w-48 opacity-90 sm:h-56 sm:w-56" viewBox="0 0 200 200" aria-hidden="true">
+        <g class="portal-spin">
+          <path id="stamp-circle" d="M100 100m-72 0a72 72 0 1 1 144 0a72 72 0 1 1-144 0" fill="none" />
+          <circle cx="100" cy="100" r="92" fill="var(--card)" stroke="var(--ink)" stroke-width="3" />
+          <text fill="var(--ink)" font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" letter-spacing="3.2">
+            <textPath href="#stamp-circle">ERP PROJECT ✳ OPERACIÓN EN ORDEN ✳ </textPath>
+          </text>
+          <circle cx="100" cy="100" r="34" fill="var(--ink)" />
+        </g>
+        <path d="M86 100l9 9 19-19" fill="none" stroke="var(--lime)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </section>
+
+    <!-- Cifras -->
+    <section class="grid grid-cols-2 gap-5 lg:col-span-5" aria-label="Resumen">
+      <div class="portal-reveal portal-card tone-lilac portal-stat" style="--delay: 80ms">
+        <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg></span>
+        <p class="portal-stat__value">{{ readable_count }}<span class="text-2xl">/{{ module_total }}</span></p>
+        <p class="portal-stat__label">Módulos con acceso</p>
+        <div class="portal-meter mt-4"><span style="width: {% widthratio readable_count module_total 100 %}%"></span></div>
+      </div>
+      <div class="portal-reveal portal-card tone-sky portal-stat" style="--delay: 130ms">
+        <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+        <p class="portal-stat__value">{{ writable_count }}</p>
+        <p class="portal-stat__label">Con escritura</p>
+        <div class="portal-meter mt-4"><span style="width: {% widthratio writable_count module_total 100 %}%"></span></div>
+      </div>
+      {% if materials_summary %}
+        <div class="portal-reveal portal-card tone-sun portal-stat" style="--delay: 180ms">
+          <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+          <p class="portal-stat__value">{{ materials_summary.total }}</p>
+          <p class="portal-stat__label">Materiales</p>
+        </div>
+        <div class="portal-reveal portal-card tone-mint portal-stat" style="--delay: 230ms">
+          <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+          <p class="portal-stat__value">{{ materials_summary.active }}</p>
+          <p class="portal-stat__label">Activos</p>
+          {% if materials_summary.total %}<div class="portal-meter mt-4"><span style="width: {% widthratio materials_summary.active materials_summary.total 100 %}%"></span></div>{% endif %}
+        </div>
+      {% else %}
+        <div class="portal-reveal portal-card tone-sun portal-stat col-span-2" style="--delay: 180ms">
+          <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg></span>
+          <p class="portal-stat__value">{{ roles|length }}</p>
+          <p class="portal-stat__label">Rol{{ roles|length|pluralize:"es" }} asignado{{ roles|length|pluralize }}</p>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+  {% if user_modules %}
+    <div class="mt-12 grid gap-8 {% if materials_summary %}xl:grid-cols-[minmax(0,1fr)_23rem]{% endif %}">
+      <!-- Módulos -->
+      <section aria-labelledby="modules-heading">
+        <div class="mb-5 flex items-end justify-between gap-4">
+          <h2 id="modules-heading" class="portal-display text-4xl">Tus módulos</h2>
+          <span class="portal-sticker tone-card -rotate-2">{{ user_modules|length }} de {{ module_total }}</span>
+        </div>
+
+        <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 {% if not materials_summary %}xl:grid-cols-3{% endif %}">
+          {% for module in user_modules %}
+            <li class="portal-reveal" style="--delay: {{ forloop.counter|add:2 }}00ms">
+              {% if module.url_name %}
+                <a href="{% url module.url_name %}" class="portal-card portal-card--lift portal-module tone-{{ module.color }} h-full">
+              {% else %}
+                <div class="portal-card portal-module portal-module--soon tone-card h-full">
+              {% endif %}
+                  <div class="flex items-start justify-between">
+                    <span class="portal-module__icon {% if not module.url_name %}tone-{{ module.color }}{% endif %}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">{{ module.icon|safe }}</svg></span>
+                    {% if module.url_name %}
+                      <span class="portal-module__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                    {% elif module.status == 'building' %}
+                      <span class="portal-badge portal-badge--building rotate-3">En obra</span>
+                    {% else %}
+                      <span class="portal-badge rotate-3">Pronto</span>
+                    {% endif %}
+                  </div>
+                  <h3 class="portal-module__name mt-6">{{ module.name }}</h3>
+                  <p class="mt-1 flex-1 text-sm leading-6 {% if module.url_name %}font-medium{% else %}portal-muted{% endif %}">{{ module.description }}</p>
+                  <div class="mt-4">
+                    {% if module.level == 2 %}
+                      <span class="portal-badge portal-badge--ink"><i></i>Lectura y escritura</span>
+                    {% else %}
+                      <span class="portal-badge"><i></i>Solo lectura</span>
+                    {% endif %}
+                  </div>
+              {% if module.url_name %}
+                </a>
+              {% else %}
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      {% if materials_summary %}
+        <!-- Materiales recientes -->
+        <section class="portal-reveal" style="--delay: 500ms" aria-labelledby="recent-heading">
+          <div class="mb-5 flex items-end justify-between gap-4">
+            <h2 id="recent-heading" class="portal-display text-4xl">Lo último</h2>
+            <a href="{% url 'materials:materials_list' %}" class="portal-sticker tone-lime rotate-2 transition hover:rotate-0">Ver todo →</a>
+          </div>
+          <div class="portal-card overflow-hidden">
+            <p class="tone-ink px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em]">Materiales recientes</p>
+            {% if materials_summary.recent %}
+              <ul>
+                {% for material in materials_summary.recent %}
+                  <li class="flex items-center gap-3 border-t-[1.5px] border-dashed border-[rgb(22_19_15/0.2)] px-5 py-3.5 first:border-t-0">
+                    <span class="grid h-10 w-10 flex-none place-items-center rounded-xl border-2 border-[var(--ink)] font-mono text-xs font-bold {% cycle 'tone-lime' 'tone-lilac' 'tone-sky' 'tone-pink' 'tone-sun' %}">{{ material.material_type|default:"?"|first|upper }}</span>
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate font-bold">{{ material }}</p>
+                      <p class="portal-subtle truncate text-xs"><span class="font-mono">{{ material.id_material|default:"Sin ID" }}</span> · {{ material.created_by.username|default:"—" }}</p>
+                    </div>
+                    <time class="portal-subtle flex-none font-mono text-xs" datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:'j M' }}</time>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="portal-muted px-5 py-10 text-center text-sm">Todavía no hay materiales registrados.</p>
+            {% endif %}
+          </div>
+        </section>
+      {% endif %}
+    </div>
+  {% else %}
+    <section class="portal-reveal portal-card portal-module--soon tone-card mt-12 flex flex-col items-center px-6 py-14 text-center" style="--delay: 200ms">
+      <span class="portal-module__icon tone-sun">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+      </span>
+      <h2 class="portal-display mt-5 text-3xl">Aún no tienes módulos</h2>
+      <p class="portal-muted mt-2 max-w-md text-sm">Pide al administrador que te asigne un rol con permisos desde el panel de administración.</p>
+    </section>
+  {% endif %}
 {% endblock %}

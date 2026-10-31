@@ -50,7 +50,7 @@ paginación sea estable). `__str__` devuelve `name`, o `id_material`, o `Materia
 Migraciones: `0001_initial.py`, `0002_alter_material_id_material.py`,
 `0003_alter_material_options.py`, `0004_alter_material_options.py`.
 
-## `suppliers` (sin commitear, sin migración)
+## `suppliers` (sin migración)
 
 ### `Suppliers` — tabla futura `suppliers_suppliers`
 
