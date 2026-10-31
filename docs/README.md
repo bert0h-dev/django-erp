@@ -1,8 +1,7 @@
 # Documentación de contexto — ERP Project
 
 Contexto técnico del proyecto para retomar el trabajo (personas o agentes) sin tener
-que releer todo el código. Revisión inicial: **2026-10-30**, sobre el commit `9f74a40`
-más los cambios sin commitear de la app `suppliers`.
+que releer todo el código. Revisión inicial: **2026-10-30**; actualizado al commit `d5dcd27`.
 
 | Documento | Contenido |
 | --- | --- |

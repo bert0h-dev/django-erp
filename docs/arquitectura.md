@@ -16,10 +16,10 @@
 ```text
 erp_project/
 ├── erp_project/        # Proyecto Django: settings.py, urls.py, wsgi/asgi
-├── core/               # Dashboard, layout base, context processor de permisos, estáticos
+├── core/               # Dashboard, layout base, catálogo de módulos (modules.py), context processor, estáticos
 ├── users/              # Modelo User propio, Role, UserRole, login/logout, admin, permissions.py
 ├── materials/          # CRUD de materiales + filtros + paginación + export CSV
-├── suppliers/          # Módulo de proveedores (en construcción, sin commitear)
+├── suppliers/          # Módulo de proveedores (en construcción)
 ├── db.sqlite3          # BD de desarrollo local (ignorada por .gitignore)
 ├── venv/               # Entorno virtual (ignorado por .gitignore)
 ├── requirements.txt    # Dependencias fijadas
@@ -34,7 +34,7 @@ erp_project/
 - `AUTH_USER_MODEL = 'users.User'`.
 - `LANGUAGE_CODE = 'es'`, `TIME_ZONE = 'UTC'`, `USE_TZ = True`.
 - Context processor propio: `core.context_processors.get_permissions` (inyecta
-  `permissions` y `roles` en todas las plantillas).
+  `permissions`, `roles` y `user_modules` en todas las plantillas).
 - `LOGIN_URL = 'login'`, `LOGIN_REDIRECT_URL = 'dashboard'`,
   `LOGOUT_REDIRECT_URL = 'login'` (nombres de URL, no rutas).
 - `DEBUG = True`, `ALLOWED_HOSTS = []`, `SECRET_KEY` en el código: solo desarrollo.

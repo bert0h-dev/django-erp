@@ -8,6 +8,14 @@ from django.http import HttpResponse
 import csv
 from users.permissions import get_module_permission
 
+def get_material_types():
+  return (
+    Material.objects.exclude(material_type='')
+    .order_by('material_type')
+    .values_list('material_type', flat=True)
+    .distinct()
+  )
+
 @login_required
 def materials_list(request):
   max_permission = get_module_permission(request.user, 'materials')
@@ -59,16 +67,18 @@ def materials_list(request):
   page_number = request.GET.get('page')
   page_obj = paginator.get_page(page_number)
 
-  all_material_types = (
-    Material.objects.exclude(material_type='')
-    .order_by('material_type')
-    .values_list('material_type', flat=True)
-    .distinct()
-  )
+  all_materials = Material.objects.all()
 
   context = {
     'page_obj': page_obj,
-    'all_material_types': all_material_types,
+    'all_material_types': get_material_types(),
+    'has_filters': any([id_material, name, material_type, status]),
+    'summary': {
+      'total': all_materials.count(),
+      'active': all_materials.filter(status='Active').count(),
+      'inactive': all_materials.filter(status='Inactive').count(),
+      'types': get_material_types().count(),
+    },
   }
 
   return render(request, 'materials/materials_list.html', context)
@@ -92,9 +102,14 @@ def material_create(request):
       messages.success(request, 'El material se creó correctamente.')
       return redirect('materials:materials_list')
   else:
-    form = MaterialForm()
+    form = MaterialForm(initial={'status': 'Active'})
 
-  return render(request, 'materials/material_form.html', {'form': form})
+  context = {
+    'form': form,
+    'material_types': get_material_types(),
+  }
+
+  return render(request, 'materials/material_form.html', context)
 
 @login_required
 def material_edit(request,pk):
@@ -119,6 +134,7 @@ def material_edit(request,pk):
   context = {
     'form': form,
     'material': material,
+    'material_types': get_material_types(),
   }
 
   return render(request, 'materials/material_form.html', context)

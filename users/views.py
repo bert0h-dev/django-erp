@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .forms import LoginForm
-from .models import Role, UserRole
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -12,17 +11,10 @@ def login_view(request):
 
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
+        # AuthenticationForm ya autentica al validar; los errores se muestran desde el formulario
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('dashboard')
-            else:
-                messages.error(request, 'No se pudo iniciar sesión. Revisa tu usuario y contraseña.')
-        else:
-            messages.error(request, 'No se pudo iniciar sesión. Revisa tu usuario y contraseña.')
+            login(request, form.get_user())
+            return redirect('dashboard')
     else:
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})

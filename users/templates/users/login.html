@@ -2,97 +2,156 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#106573" />
+    {% include 'core/_head.html' %}
+    <link rel="stylesheet" href="{% static 'users/css/login.css' %}" />
     <title>Iniciar sesión | ERP Project</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
   </head>
-  <body class="min-h-screen bg-[#f2f6f6] text-slate-900 antialiased">
+  <body class="portal-page flex min-h-screen flex-col antialiased">
     <a class="ui-skip-link" href="#login-form">Saltar al formulario de inicio de sesión</a>
-    <main class="flex min-h-screen items-center justify-center p-4 sm:p-8">
-      <div class="grid w-full max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-[0_32px_100px_-40px_rgba(16,54,60,0.35)] lg:min-h-[680px] lg:grid-cols-[1.05fr_0.95fr]">
-        <section class="relative flex min-h-64 flex-col justify-between overflow-hidden bg-[#106573] p-8 text-white sm:p-12 lg:p-14">
-          <div class="absolute -right-28 -top-32 h-96 w-96 rounded-full border border-white/10"></div>
-          <div class="absolute -bottom-56 -left-24 h-[30rem] w-[30rem] rounded-full border border-white/10"></div>
-          <div class="absolute right-12 top-24 h-44 w-44 rounded-full bg-[#70c5bd]/10 blur-3xl"></div>
 
-          <div class="relative flex items-center gap-3">
-            <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20"><img src="{% static 'img/logo_2.svg' %}" alt="" class="h-10 w-10 object-contain" /></span>
-            <span class="text-sm font-bold tracking-[0.16em]">ERP PROJECT</span>
-          </div>
+    <main class="mx-auto grid w-full max-w-7xl flex-1 items-center gap-12 px-4 py-8 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:px-12 lg:py-12">
+      <!-- Presentación -->
+      <section aria-labelledby="login-headline">
+        <div class="portal-reveal flex items-center gap-3" style="--delay: 0ms">
+          <span class="portal-brand__mark h-11 w-11"><img src="{% static 'img/logo_2.svg' %}" alt="" /></span>
+          <span class="portal-brand__name text-lg">ERP<br />Project</span>
+        </div>
 
-          <div class="relative my-12 max-w-lg">
-            <span class="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-teal-50">
-              <span class="h-2 w-2 rounded-full bg-[#8de0c5]"></span>
-              Tu espacio de trabajo
-            </span>
-            <h1 class="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Cada parte de tu negocio,<br class="hidden xl:block" /> en un solo lugar.</h1>
-            <p class="mt-5 max-w-md text-base leading-7 text-teal-50/80 sm:text-lg">Organiza tus operaciones y toma mejores decisiones desde una plataforma hecha para crecer contigo.</p>
-          </div>
+        <h1 id="login-headline" class="portal-reveal portal-display mt-10 text-[3.2rem] sm:text-7xl xl:text-[5.5rem]" style="--delay: 80ms">
+          La operación de tu negocio, en un solo <span class="portal-marker">lugar.</span>
+        </h1>
+        <p class="portal-reveal portal-muted mt-6 max-w-lg text-lg" style="--delay: 160ms">
+          Materiales, proveedores, compras y más, con acceso por rol para cada persona de tu equipo.
+        </p>
 
-          <div class="relative flex items-center justify-between gap-4 border-t border-white/15 pt-5 text-xs text-teal-50/70 sm:text-sm">
-            <span>© 2026 ERP Project</span>
-            <span class="flex items-center gap-2">
-              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>Acceso protegido
-            </span>
-          </div>
-        </section>
+        <!-- Mosaico de módulos con su estado real (decorativo) -->
+        <ul class="login-mosaic mt-10 hidden sm:grid" aria-hidden="true">
+          <li class="portal-reveal portal-card tone-lime login-tile login-tile--big" style="--delay: 260ms; --r: -2deg">
+            <span class="portal-module__icon"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+            <span class="portal-module__name mt-auto">Materiales</span>
+            <span class="portal-badge portal-badge--ink"><i></i>Disponible</span>
+          </li>
+          <li class="portal-reveal portal-card tone-lilac login-tile" style="--delay: 320ms; --r: 3deg">
+            <span class="login-tile__name">Proveedores</span>
+            <span class="portal-badge portal-badge--building">En obra</span>
+          </li>
+          <li class="portal-reveal portal-card tone-sky login-tile" style="--delay: 380ms; --r: -1.5deg">
+            <span class="login-tile__name">Clientes</span>
+            <span class="portal-badge">Pronto</span>
+          </li>
+          <li class="portal-reveal portal-card tone-pink login-tile" style="--delay: 440ms; --r: 1.5deg">
+            <span class="login-tile__name">Compras</span>
+            <span class="portal-badge">Pronto</span>
+          </li>
+          <li class="portal-reveal portal-card tone-sun login-tile" style="--delay: 500ms; --r: -3deg">
+            <span class="login-tile__name">Inventario</span>
+            <span class="portal-badge">Pronto</span>
+          </li>
+        </ul>
+      </section>
 
-        <section class="flex items-center justify-center px-6 py-12 sm:px-12 lg:px-14">
-          <div class="w-full max-w-md">
-            <div class="mb-9">
-              <p class="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#106573]">Bienvenido de vuelta</p>
-              <h2 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Inicia sesión</h2>
-              <p class="mt-3 text-slate-500">Ingresa tus datos para continuar a tu cuenta.</p>
-            </div>
+      <!-- Formulario -->
+      <section class="portal-reveal flex justify-center lg:justify-end" style="--delay: 200ms" aria-labelledby="login-title">
+        <div class="relative w-full max-w-md">
+          <span class="portal-sticker tone-sun absolute -right-3 -top-4 z-10 rotate-6">Acceso por rol</span>
 
-            {% for message in messages %}
-              <div class="mb-5 {% if message.tags == 'success' %}ui-status-success{% elif message.tags == 'warning' %}ui-status-warning{% elif message.tags == 'error' %}ui-status-error{% else %}ui-status-neutral{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
-            {% endfor %}
+          <div class="portal-card p-7 sm:p-9" style="box-shadow: var(--shadow-lg)">
+            <p class="portal-eyebrow">Bienvenido de vuelta</p>
+            <h2 id="login-title" class="portal-display mt-4 text-5xl">Entra.</h2>
+            <p class="portal-muted mt-2 text-sm">Ingresa tus datos para continuar a tu cuenta.</p>
 
-            {% if form.non_field_errors %}
-              <div class="ui-status-error mb-5" role="alert">{{ form.non_field_errors }}</div>
+            {% if messages or form.non_field_errors %}
+              <div class="mt-6 space-y-3">
+                {% for message in messages %}
+                  <div class="portal-alert {% if message.tags == 'error' %}portal-alert--error{% elif message.tags == 'success' %}portal-alert--success{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <div class="portal-alert portal-alert--error" role="alert">{{ error }}</div>
+                {% endfor %}
+              </div>
             {% endif %}
 
-            <form id="login-form" method="post" class="space-y-5" data-loading-form tabindex="-1">
+            <form id="login-form" method="post" class="mt-7 space-y-5" data-loading-form tabindex="-1" novalidate>
               {% csrf_token %}
+
               <div>
-                <label for="{{ form.username.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Usuario</label>
-                {{ form.username }}
-                {% for error in form.username.errors %}
-                  <p class="mt-2 text-sm text-rose-600">{{ error }}</p>
-                {% endfor %}
+                <label for="{{ form.username.id_for_label }}" class="portal-label">Usuario</label>
+                <div class="portal-field-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0m12-13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                  <input
+                    type="text"
+                    name="{{ form.username.html_name }}"
+                    id="{{ form.username.id_for_label }}"
+                    value="{{ form.username.value|default:'' }}"
+                    placeholder="Escribe tu usuario"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    maxlength="150"
+                    required
+                    autofocus
+                    class="portal-field"
+                    {% if form.username.errors %}aria-invalid="true" aria-describedby="username-errors"{% endif %}
+                  />
+                </div>
+                {% if form.username.errors %}
+                  <div id="username-errors" class="portal-field-error">{% for error in form.username.errors %}<p>{{ error }}</p>{% endfor %}</div>
+                {% endif %}
               </div>
 
               <div>
-                <label for="{{ form.password.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Contraseña</label>
-                {{ form.password }}
-                {% for error in form.password.errors %}
-                  <p class="mt-2 text-sm text-rose-600">{{ error }}</p>
-                {% endfor %}
+                <label for="{{ form.password.id_for_label }}" class="portal-label">Contraseña</label>
+                <div class="portal-field-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5V11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  <input
+                    type="password"
+                    name="{{ form.password.html_name }}"
+                    id="{{ form.password.id_for_label }}"
+                    placeholder="Escribe tu contraseña"
+                    autocomplete="current-password"
+                    required
+                    class="portal-field login-password"
+                    aria-describedby="caps-lock-hint{% if form.password.errors %} password-errors{% endif %}"
+                    {% if form.password.errors %}aria-invalid="true"{% endif %}
+                    data-password-input
+                  />
+                  <button type="button" class="login-toggle" aria-label="Mostrar contraseña" aria-pressed="false" aria-controls="{{ form.password.id_for_label }}" data-password-toggle>
+                    <svg data-eye-open viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" /></svg>
+                    <svg data-eye-closed hidden viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  </button>
+                </div>
+                <p id="caps-lock-hint" class="login-caps" hidden data-caps-hint>⇪ Bloq Mayús está activado</p>
+                {% if form.password.errors %}
+                  <div id="password-errors" class="portal-field-error">{% for error in form.password.errors %}<p>{{ error }}</p>{% endfor %}</div>
+                {% endif %}
               </div>
 
-              <button type="submit" data-loading-label="Iniciando sesión..." class="ui-button-primary group w-full">
+              <button type="submit" data-loading-label="Entrando..." class="portal-button login-submit group w-full">
                 <span data-submit-label>Entrar a mi cuenta</span>
                 <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
-                <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <svg class="transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
               </button>
             </form>
 
-            <p class="mt-8 text-center text-xs leading-5 text-slate-500">Acceso exclusivo para usuarios autorizados.</p>
+            <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t-2 border-dashed border-[var(--ink)] pt-5">
+              <span class="portal-subtle text-xs font-semibold">Elige tu color</span>
+              {% include 'core/_accent_picker.html' %}
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
+
+    <!-- Cinta con los módulos -->
+    <div class="portal-marquee" aria-hidden="true">
+      <div class="portal-marquee__track">
+        {% for _ in "ab" %}
+          <span>Materiales</span><span>Proveedores</span><span>Clientes</span><span>Compras</span><span>Ventas</span><span>Inventario</span><span>Contabilidad</span><span>Reportes</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'users/js/login.js' %}"></script>
   </body>
 </html>
