@@ -11,7 +11,7 @@ class CustomUserAdmin(UserAdmin):
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
   list_display = ('role_name', 'customers', 'suppliers', 'materials', 'purchases', 'sales', 'inventory', 'accounting', 'reporting')
-  search_fields = ('name',)
+  search_fields = ('role_name',)
 
 @admin.register(UserRole)
 class UserRoleAdmin(admin.ModelAdmin):

@@ -6,12 +6,11 @@ from .forms import MaterialForm
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 import csv
-from django.db import models
-from users.models import UserRole
+from users.permissions import get_module_permission
 
 @login_required
 def materials_list(request):
-  max_permission = UserRole.objects.filter(user_id=request.user).aggregate(max_permission=models.Max('role__materials'))['max_permission'] or 0
+  max_permission = get_module_permission(request.user, 'materials')
 
   if max_permission == 0:
     return redirect('dashboard')
@@ -28,7 +27,7 @@ def materials_list(request):
   if name:
     materials_list = materials_list.filter(name__icontains=name)
   if material_type:
-    materials_list = materials_list.filter(material_type__icontains=material_type)
+    materials_list = materials_list.filter(material_type=material_type)
   if status is not None and status != '':
     materials_list = materials_list.filter(status=status)
 
@@ -60,14 +59,26 @@ def materials_list(request):
   page_number = request.GET.get('page')
   page_obj = paginator.get_page(page_number)
 
-  return render(request, 'materials/materials_list.html', {'page_obj':page_obj})
+  all_material_types = (
+    Material.objects.exclude(material_type='')
+    .order_by('material_type')
+    .values_list('material_type', flat=True)
+    .distinct()
+  )
+
+  context = {
+    'page_obj': page_obj,
+    'all_material_types': all_material_types,
+  }
+
+  return render(request, 'materials/materials_list.html', context)
 
 @login_required
 def material_create(request):
-  max_permission = UserRole.objects.filter(user_id=request.user).aggregate(max_permission=models.Max('role__materials'))['max_permission'] or 0
+  max_permission = get_module_permission(request.user, 'materials')
 
   if max_permission == 1:
-    return redirect('materials')
+    return redirect('materials:materials_list')
   if max_permission == 0:
     return redirect('dashboard')
   
@@ -87,14 +98,14 @@ def material_create(request):
 
 @login_required
 def material_edit(request,pk):
-  material = get_object_or_404(Material, pk=pk)
-
-  max_permission = UserRole.objects.filter(user_id=request.user).aggregate(max_permission=models.Max('role__materials'))['max_permission'] or 0
+  max_permission = get_module_permission(request.user, 'materials')
 
   if max_permission == 1:
-    return redirect('materials')
+    return redirect('materials:materials_list')
   if max_permission == 0:
     return redirect('dashboard')
+
+  material = get_object_or_404(Material, pk=pk)
 
   if request.method == 'POST':
     form = MaterialForm(request.POST, instance=material)
@@ -114,10 +125,10 @@ def material_edit(request,pk):
 
 @login_required
 def material_delete(request, pk):
-  max_permission = UserRole.objects.filter(user_id=request.user).aggregate(max_permission=models.Max('role__materials'))['max_permission'] or 0
+  max_permission = get_module_permission(request.user, 'materials')
 
   if max_permission < 2:
-    return redirect('materials:material_list')
+    return redirect('materials:materials_list')
 
   material = get_object_or_404(Material, pk=pk)
 

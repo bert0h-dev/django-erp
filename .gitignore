@@ -1,0 +1,32 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Base de datos local
+db.sqlite3
+db.sqlite3-journal
+
+# Variables de entorno y secretos
+.env
+.env.*
+
+# Archivos generados por Django
+staticfiles/
+media/
+
+# Pruebas y cobertura
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

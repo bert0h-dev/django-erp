@@ -26,9 +26,10 @@ class Material(models.Model):
         null=True,
     )
 
-    class Mewta:
+    class Meta:
         verbose_name = "Material"
         verbose_name_plural = "Materials"
+        ordering = ['-created_at', '-id']
 
     def __str__(self):
-        return self.name
+        return self.name or self.id_material or f'Material {self.pk}'

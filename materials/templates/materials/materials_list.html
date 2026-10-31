@@ -35,8 +35,8 @@
         <label for="material_type" class="mb-2 block text-sm font-semibold text-slate-700">Tipo de material</label>
         <select name="material_type" id="material_type" class="ui-field">
           <option value="" {% if not request.GET.material_type %}selected{% endif %}>Todos</option>
-          {% for material_type_obj in all_material_types %}
-            <option value="{{ material_type_obj.name }}" {% if request.GET.material_type == material_type_obj.name %}selected{% endif %}>{{ material_type_obj.name }}</option>
+          {% for material_type in all_material_types %}
+            <option value="{{ material_type }}" {% if request.GET.material_type == material_type %}selected{% endif %}>{{ material_type }}</option>
           {% endfor %}
         </select>
       </div>
@@ -60,7 +60,7 @@
           </a>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row">
-          <a href="?export=csv{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-[#cde2e3] bg-[#f2f8f8] px-5 py-3 text-sm font-semibold text-[#106573] transition hover:bg-[#e8f3f3]">
+          <a href="{% querystring export='csv' page=None %}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-[#cde2e3] bg-[#f2f8f8] px-5 py-3 text-sm font-semibold text-[#106573] transition hover:bg-[#e8f3f3]">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 3v12m0 0 4-4m-4 4-4-4m-3 7v2h14v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
@@ -166,20 +166,20 @@
         <p class="text-sm text-slate-500">Mostrando página <span class="font-semibold text-slate-700">{{ page_obj.number }}</span> de <span class="font-semibold text-slate-700">{{ page_obj.paginator.num_pages }}</span></p>
         <nav class="flex flex-wrap items-center justify-center gap-1" aria-label="Paginación">
           {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Anterior">&lsaquo;</a>
+            <a href="{% querystring page=page_obj.previous_page_number %}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Anterior">&lsaquo;</a>
           {% endif %}
 
           {% for i in page_obj.paginator.page_range %}
             {% if page_obj.number == i %}
               <span class="grid h-9 min-w-9 place-items-center rounded-lg bg-[#106573] px-2 text-sm font-semibold text-white" aria-current="page">{{ i }}</span>
             {% else %}
-              <a href="?page={{ i }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]">{{ i }}</a>
+              <a href="{% querystring page=i %}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]">{{ i }}</a>
             {% endif %}
           {% endfor %}
 
           {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Siguiente">&rsaquo;</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&id_material={{ request.GET.id_material }}&name={{ request.GET.name }}&material_type={{ request.GET.material_type }}&status={{ request.GET.status }}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Última página">&raquo;</a>
+            <a href="{% querystring page=page_obj.next_page_number %}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Siguiente">&rsaquo;</a>
+            <a href="{% querystring page=page_obj.paginator.num_pages %}" class="grid h-9 min-w-9 place-items-center rounded-lg border border-slate-200 px-2 text-sm text-slate-600 transition hover:border-[#b8d7d9] hover:bg-[#f2f8f8] hover:text-[#106573]" aria-label="Última página">&raquo;</a>
           {% endif %}
         </nav>
       </div>
