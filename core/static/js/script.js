@@ -1,76 +1,66 @@
 // Bloque propio para no chocar con las constantes globales de otros scripts (p. ej. users/js/login.js)
 {
-  // Color de acento elegido por el usuario (lo aplica antes de pintar core/_head.html)
-  const ACCENT_KEY = 'erp-accent';
-  const accentButtons = document.querySelectorAll('[data-accent-option]');
-
-  const markAccent = (accent) => {
-    accentButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.accentOption === accent));
-    });
-  };
-
-  markAccent(document.documentElement.dataset.accent || 'tangerine');
-
-  accentButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const accent = button.dataset.accentOption;
-      if (accent === 'tangerine') {
-        delete document.documentElement.dataset.accent;
-      } else {
-        document.documentElement.dataset.accent = accent;
-      }
-      markAccent(accent);
-      try {
-        localStorage.setItem(ACCENT_KEY, accent);
-      } catch (error) {
-        // Sin almacenamiento disponible: el acento solo dura esta visita
-      }
-    });
-  });
-
-  // Menú desplegable en pantallas pequeñas
+  // Menú lateral: en pantallas pequeñas se abre como cajón
   const menuButton = document.getElementById('menu-toggle');
-  const sheet = document.getElementById('portal-sheet');
-  const sheetScrim = document.getElementById('sheet-scrim');
+  const sidebar = document.getElementById('portal-sidebar');
+  const sidebarScrim = document.getElementById('sidebar-scrim');
 
-  if (menuButton && sheet && sheetScrim) {
-    const setSheet = (open) => {
+  if (menuButton && sidebar && sidebarScrim) {
+    const setSidebar = (open) => {
       menuButton.setAttribute('aria-expanded', String(open));
-      sheetScrim.hidden = !open;
+      sidebar.classList.toggle('is-open', open);
+      sidebarScrim.hidden = !open;
       document.body.style.overflow = open ? 'hidden' : '';
-
       if (open) {
-        sheet.hidden = false;
-        requestAnimationFrame(() => {
-          sheet.classList.add('is-open');
-          sheet.querySelector('a, button')?.focus();
-        });
-      } else {
-        sheet.classList.remove('is-open');
-        sheet.addEventListener('transitionend', () => {
-          if (!sheet.classList.contains('is-open')) {
-            sheet.hidden = true;
-          }
-        }, { once: true });
+        sidebar.querySelector('a, button')?.focus();
       }
     };
 
-    menuButton.addEventListener('click', () => setSheet(true));
-    sheetScrim.addEventListener('click', () => setSheet(false));
-    sheet.querySelector('[data-sheet-close]')?.addEventListener('click', () => {
-      setSheet(false);
+    menuButton.addEventListener('click', () => setSidebar(true));
+    sidebarScrim.addEventListener('click', () => setSidebar(false));
+    sidebar.querySelector('[data-sidebar-close]')?.addEventListener('click', () => {
+      setSidebar(false);
       menuButton.focus();
     });
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && sheet.classList.contains('is-open')) {
-        setSheet(false);
+      if (event.key === 'Escape' && sidebar.classList.contains('is-open')) {
+        setSidebar(false);
         menuButton.focus();
       }
     });
     window.matchMedia('(min-width: 1024px)').addEventListener('change', (event) => {
-      if (event.matches && sheet.classList.contains('is-open')) {
-        setSheet(false);
+      if (event.matches && sidebar.classList.contains('is-open')) {
+        setSidebar(false);
+      }
+    });
+  }
+
+  // Menú lateral contraído en escritorio (core/_head.html lo aplica antes de pintar)
+  const SIDEBAR_KEY = 'erp-sidebar';
+  const collapseButton = document.querySelector('[data-sidebar-collapse]');
+
+  if (collapseButton) {
+    const markCollapsed = (collapsed) => {
+      const label = collapsed ? 'Expandir menú' : 'Contraer menú';
+      collapseButton.setAttribute('aria-pressed', String(collapsed));
+      collapseButton.setAttribute('aria-label', label);
+      collapseButton.dataset.tooltip = label;
+    };
+
+    markCollapsed(document.documentElement.dataset.sidebar === 'collapsed');
+
+    collapseButton.addEventListener('click', () => {
+      const collapsed = document.documentElement.dataset.sidebar !== 'collapsed';
+      if (collapsed) {
+        document.documentElement.dataset.sidebar = 'collapsed';
+      } else {
+        delete document.documentElement.dataset.sidebar;
+      }
+      markCollapsed(collapsed);
+      try {
+        localStorage.setItem(SIDEBAR_KEY, collapsed ? 'collapsed' : 'expanded');
+      } catch (error) {
+        // Sin almacenamiento disponible: la preferencia solo dura esta visita
       }
     });
   }

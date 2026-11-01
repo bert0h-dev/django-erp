@@ -4,20 +4,20 @@
 
 {% block content %}
   <!-- Encabezado -->
-  <section class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+  <section class="portal-reveal flex flex-col justify-between gap-4 md:flex-row md:items-end" style="--delay: 0ms">
     <div>
-      <p class="portal-reveal portal-eyebrow" style="--delay: 0ms">Catálogo</p>
-      <h1 class="portal-reveal portal-display mt-4 text-6xl sm:text-7xl" style="--delay: 60ms"><span class="portal-marker">Materiales</span></h1>
-      <p class="portal-reveal portal-muted mt-4 text-lg" style="--delay: 120ms">Consulta y administra los materiales de tu negocio.</p>
+      <p class="portal-eyebrow">Catálogo</p>
+      <h1 class="portal-display mt-1 text-3xl">Materiales</h1>
+      <p class="portal-muted mt-1 text-sm">Consulta y administra los materiales de tu negocio.</p>
     </div>
-    <div class="portal-reveal flex flex-wrap gap-3" style="--delay: 160ms">
+    <div class="flex flex-wrap gap-2">
       <a href="{% querystring export='csv' page=None %}" class="portal-button-secondary">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4m-3 7v2h14v-2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4m-3 7v2h14v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
         Exportar CSV
       </a>
       {% if permissions.materials >= 2 %}
         <a href="{% url 'materials:material_create' %}" class="portal-button">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
           Crear material
         </a>
       {% endif %}
@@ -25,34 +25,49 @@
   </section>
 
   <!-- Resumen del catálogo completo -->
-  <section class="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-4" aria-label="Resumen del catálogo">
-    <div class="portal-reveal portal-card tone-lime portal-stat" style="--delay: 180ms">
-      <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-      <p class="portal-stat__value">{{ summary.total }}</p>
-      <p class="portal-stat__label">En total</p>
+  <section class="portal-reveal portal-card mt-5 grid grid-cols-2 gap-2 p-2 lg:grid-cols-4" style="--delay: 60ms" aria-label="Resumen del catálogo">
+    <div class="portal-panel portal-panel--plain">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">En total</p>
+        <span class="portal-tile portal-tile--sm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.total }}</p>
     </div>
-    <div class="portal-reveal portal-card tone-mint portal-stat" style="--delay: 220ms">
-      <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-      <p class="portal-stat__value">{{ summary.active }}</p>
-      <p class="portal-stat__label">Activos</p>
-      {% if summary.total %}<div class="portal-meter mt-4"><span style="width: {% widthratio summary.active summary.total 100 %}%"></span></div>{% endif %}
+    <div class="portal-panel">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">Activos</p>
+        <span class="portal-muted text-sm tabular-nums">{% if summary.total %}{% widthratio summary.active summary.total 100 %}{% else %}0{% endif %}%</span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.active }}</p>
+      <div class="portal-meter mt-3"><span style="width: {% if summary.total %}{% widthratio summary.active summary.total 100 %}{% else %}0{% endif %}%"></span></div>
     </div>
-    <div class="portal-reveal portal-card tone-card portal-stat" style="--delay: 260ms">
-      <span class="portal-stat__icon tone-paper"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM5 5l14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg></span>
-      <p class="portal-stat__value">{{ summary.inactive }}</p>
-      <p class="portal-stat__label">Inactivos</p>
+    <div class="portal-panel">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">Inactivos</p>
+        <span class="portal-muted text-sm tabular-nums">{% if summary.total %}{% widthratio summary.inactive summary.total 100 %}{% else %}0{% endif %}%</span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.inactive }}</p>
+      <div class="portal-meter portal-meter--secondary mt-3"><span style="width: {% if summary.total %}{% widthratio summary.inactive summary.total 100 %}{% else %}0{% endif %}%"></span></div>
     </div>
-    <div class="portal-reveal portal-card tone-lilac portal-stat" style="--delay: 300ms">
-      <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8ZM7.5 7.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-      <p class="portal-stat__value">{{ summary.types }}</p>
-      <p class="portal-stat__label">Tipo{{ summary.types|pluralize }}</p>
+    <div class="portal-panel portal-panel--plain">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">Tipo{{ summary.types|pluralize }}</p>
+        <span class="portal-tile portal-tile--sm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8ZM7.5 7.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.types }}</p>
     </div>
   </section>
 
-  <!-- Filtros -->
-  <section class="portal-reveal portal-card mt-8 p-5 sm:p-6" style="--delay: 340ms" aria-labelledby="filters-heading">
-    <h2 id="filters-heading" class="sr-only">Filtros</h2>
-    <form method="get" action="{% url 'materials:materials_list' %}" class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 xl:grid-cols-[1fr_1.4fr_1fr_0.8fr_auto]" data-loading-form>
+  <!-- Filtros y listado -->
+  <section class="portal-reveal portal-card mt-5 p-5" style="--delay: 120ms" aria-labelledby="list-heading">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 id="list-heading" class="portal-card-title">Listado</h2>
+      <span class="portal-chip">
+        {% if page_obj.paginator.count %}{{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}{% else %}0 resultados{% endif %}
+      </span>
+    </div>
+
+    <form method="get" action="{% url 'materials:materials_list' %}" class="mt-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1.4fr_1fr_0.8fr_auto]" data-loading-form aria-label="Filtros">
       <div>
         <label for="id_material" class="portal-label">ID de material</label>
         <div class="portal-field-wrap">
@@ -63,7 +78,7 @@
       <div>
         <label for="name" class="portal-label">Nombre</label>
         <div class="portal-field-wrap">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
           <input type="search" name="name" id="name" value="{{ request.GET.name }}" placeholder="Buscar por nombre" class="portal-field" />
         </div>
       </div>
@@ -91,15 +106,15 @@
         </button>
         {% if has_filters %}
           <a href="{% url 'materials:materials_list' %}" class="portal-button-secondary !px-3" aria-label="Limpiar filtros" title="Limpiar filtros">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </a>
         {% endif %}
       </div>
     </form>
 
     {% if has_filters %}
-      <div class="mt-5 flex flex-wrap items-center gap-2 border-t-2 border-dashed border-[var(--ink)] pt-4" aria-label="Filtros activos">
-        <span class="portal-eyebrow mr-1">Filtros activos</span>
+      <div class="mt-4 flex flex-wrap items-center gap-2" aria-label="Filtros activos">
+        <span class="portal-subtle mr-1 text-xs font-semibold">Filtros activos</span>
         {% if request.GET.id_material %}
           <span class="portal-filter-chip">ID: {{ request.GET.id_material }}<a href="{% querystring id_material=None page=None %}" aria-label="Quitar filtro de ID"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
         {% endif %}
@@ -114,20 +129,10 @@
         {% endif %}
       </div>
     {% endif %}
-  </section>
-
-  <!-- Listado -->
-  <section class="portal-reveal portal-card mt-8 overflow-hidden" style="--delay: 400ms" aria-labelledby="list-heading">
-    <div class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
-      <h2 id="list-heading" class="portal-display text-2xl">Listado</h2>
-      <span class="portal-sticker tone-accent">
-        {% if page_obj.paginator.count %}{{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}{% else %}0 resultados{% endif %}
-      </span>
-    </div>
 
     {% if page_obj %}
       <!-- Tabla (md en adelante) -->
-      <div class="hidden overflow-x-auto md:block">
+      <div class="portal-table-wrap mt-5 hidden md:block">
         <table class="portal-table">
           <thead>
             <tr>
@@ -137,7 +142,7 @@
               <th scope="col">Tipo</th>
               <th scope="col">Estado</th>
               <th scope="col">Creado por</th>
-              {% if permissions.materials >= 2 %}<th scope="col" class="text-right"><span class="sr-only">Acciones</span></th>{% endif %}
+              {% if permissions.materials >= 2 %}<th scope="col" class="text-right">Acciones</th>{% endif %}
             </tr>
           </thead>
           <tbody>
@@ -145,7 +150,7 @@
               <tr>
                 <td class="whitespace-nowrap"><span class="portal-code">{{ material.id_material|default:"—" }}</span></td>
                 <td class="max-w-sm">
-                  <p class="truncate font-bold">{{ material.name|default:"Material sin nombre" }}</p>
+                  <p class="truncate font-semibold">{{ material.name|default:"Material sin nombre" }}</p>
                   <p class="portal-subtle truncate text-xs" title="{{ material.description }}">{{ material.description|default:"Sin descripción" }}</p>
                 </td>
                 <td class="whitespace-nowrap font-mono text-sm">{{ material.unit|default:"—" }}</td>
@@ -153,7 +158,7 @@
                 <td>{% include 'materials/_status.html' %}</td>
                 <td class="whitespace-nowrap">
                   <span class="flex items-center gap-2">
-                    <span class="portal-avatar !h-7 !w-7 text-xs">{{ material.created_by.username|default:"?"|first|upper }}</span>
+                    <span class="portal-avatar portal-avatar--sm">{{ material.created_by.username|default:"?"|first|upper }}</span>
                     {{ material.created_by.username|default:"—" }}
                   </span>
                 </td>
@@ -167,15 +172,15 @@
       </div>
 
       <!-- Tarjetas (móvil) -->
-      <ul class="border-t-2 border-[var(--ink)] md:hidden">
+      <ul class="mt-4 space-y-2 md:hidden">
         {% for material in page_obj %}
-          <li class="flex items-start gap-3 border-b-[1.5px] border-dashed border-[rgb(22_19_15/0.2)] px-5 py-4 last:border-b-0">
+          <li class="portal-row portal-row--static items-start">
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="portal-code">{{ material.id_material|default:"—" }}</span>
                 {% include 'materials/_status.html' %}
               </div>
-              <p class="mt-2 truncate font-bold">{{ material.name|default:"Material sin nombre" }}</p>
+              <p class="mt-2 truncate font-semibold">{{ material.name|default:"Material sin nombre" }}</p>
               <p class="portal-subtle mt-0.5 text-xs">{{ material.material_type|default:"Sin tipo" }} · {{ material.unit|default:"—" }} · {{ material.created_by.username|default:"—" }}</p>
             </div>
             {% if permissions.materials >= 2 %}
@@ -186,26 +191,26 @@
       </ul>
     {% else %}
       <!-- Sin resultados -->
-      <div class="portal-module--soon flex flex-col items-center border-t-2 border-[var(--ink)] px-6 py-16 text-center">
-        <span class="portal-module__icon tone-sun">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+      <div class="portal-empty mt-5">
+        <span class="portal-tile portal-tile--lg" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
         </span>
-        <p class="portal-display mt-5 text-3xl">Nada por aquí</p>
+        <p class="portal-card-title mt-4">Nada por aquí</p>
         {% if has_filters %}
-          <p class="portal-muted mt-2 text-sm">Ningún material coincide con los filtros.</p>
-          <a href="{% url 'materials:materials_list' %}" class="portal-button-secondary mt-6">Quitar filtros</a>
+          <p class="portal-muted mt-1 text-sm">Ningún material coincide con los filtros.</p>
+          <a href="{% url 'materials:materials_list' %}" class="portal-button-secondary mt-5">Quitar filtros</a>
         {% else %}
-          <p class="portal-muted mt-2 text-sm">Cuando registres uno, aparecerá en esta lista.</p>
+          <p class="portal-muted mt-1 text-sm">Cuando registres uno, aparecerá en esta lista.</p>
           {% if permissions.materials >= 2 %}
-            <a href="{% url 'materials:material_create' %}" class="portal-button mt-6">Registrar el primero</a>
+            <a href="{% url 'materials:material_create' %}" class="portal-button mt-5">Registrar el primero</a>
           {% endif %}
         {% endif %}
       </div>
     {% endif %}
 
     {% if page_obj.has_other_pages %}
-      <nav class="flex flex-col items-center justify-between gap-3 border-t-2 border-[var(--ink)] px-5 py-4 sm:flex-row sm:px-6" aria-label="Paginación">
-        <p class="portal-eyebrow">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</p>
+      <nav class="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row" aria-label="Paginación">
+        <p class="portal-muted text-sm">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</p>
         <div class="flex flex-wrap items-center gap-1.5">
           {% if page_obj.has_previous %}
             <a href="{% querystring page=page_obj.previous_page_number %}" class="portal-page-link" aria-label="Página anterior">&larr;</a>
@@ -228,13 +233,13 @@
   {% if permissions.materials >= 2 %}
     <!-- Confirmación de borrado (la abre script.js desde los formularios con data-confirm) -->
     <dialog id="confirm-dialog" class="portal-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
-      <div class="p-6 sm:p-7">
-        <span class="portal-module__icon tone-pink">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <div class="p-6">
+        <span class="portal-tile portal-tile--lg portal-tile--danger" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
         </span>
-        <h2 id="confirm-title" class="portal-display mt-5 text-3xl">¿Eliminar material?</h2>
-        <p id="confirm-text" class="portal-muted mt-3 text-sm leading-6">Vas a eliminar <strong class="text-[var(--ink)]" data-confirm-name></strong>. Esta acción no se puede deshacer.</p>
-        <form method="dialog" class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <h2 id="confirm-title" class="portal-card-title mt-4 !text-xl">¿Eliminar material?</h2>
+        <p id="confirm-text" class="portal-muted mt-2 text-sm leading-6">Vas a eliminar <strong class="text-[var(--ink)]" data-confirm-name></strong>. Esta acción no se puede deshacer.</p>
+        <form method="dialog" class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button value="cancel" class="portal-button-secondary" autofocus>Cancelar</button>
           <button value="confirm" class="portal-button-danger">Sí, eliminar</button>
         </form>

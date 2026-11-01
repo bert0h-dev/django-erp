@@ -8,107 +8,114 @@
   <body class="portal-page min-h-screen antialiased">
     <a class="ui-skip-link" href="#main-content">Saltar al contenido principal</a>
 
-    <!-- Barra superior flotante -->
-    <header class="portal-topbar">
-      <div class="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div class="portal-topbar__inner">
+    <div class="portal-shell">
+      <!-- Menú lateral (en pantallas pequeñas se abre como cajón) -->
+      <aside id="portal-sidebar" class="portal-sidebar" aria-label="Menú">
+        <div class="portal-sidebar__head">
           <a href="{% url 'dashboard' %}" class="portal-brand" aria-label="ERP Project, ir al inicio">
             <span class="portal-brand__mark"><img src="{% static 'img/logo_2.svg' %}" alt="" /></span>
-            <span class="portal-brand__name hidden sm:block">ERP<br />Project</span>
+            <span class="portal-brand__name portal-collapsible">ERP Project</span>
+          </a>
+          <button type="button" class="portal-icon-button lg:hidden" aria-label="Cerrar menú" data-sidebar-close>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+          </button>
+          <button type="button" class="portal-collapse-toggle hidden lg:grid" aria-label="Contraer menú" aria-pressed="false" data-tooltip="Contraer menú" data-sidebar-collapse>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v14H4zM9 5v14" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /><path d="m15 10-2 2 2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+
+        <nav aria-label="Navegación principal" class="mt-6 flex-1 overflow-y-auto">
+          <p class="portal-nav-heading">General</p>
+          <a href="{% url 'dashboard' %}" class="portal-nav-link" data-tooltip="Inicio" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg>
+            <span class="portal-collapsible">Inicio</span>
           </a>
 
-          <nav aria-label="Navegación principal" class="ml-2 hidden items-center gap-1 lg:flex">
-            <a href="{% url 'dashboard' %}" class="portal-navpill" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>Inicio</a>
+          {% if user_modules %}
+            <p class="portal-nav-heading">Módulos</p>
             {% for module in user_modules %}
               {% if module.url_name %}
-                <a href="{% url module.url_name %}" class="portal-navpill" {% if request.resolver_match.namespace == module.key %}aria-current="page"{% endif %}>
-                  <span class="portal-dot tone-{{ module.color }}" aria-hidden="true"></span>{{ module.name }}
+                <a href="{% url module.url_name %}" class="portal-nav-link" data-tooltip="{{ module.name }}" {% if request.resolver_match.namespace == module.key %}aria-current="page"{% endif %}>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">{{ module.icon|safe }}</svg><span class="portal-collapsible">{{ module.name }}</span>
                 </a>
+              {% else %}
+                <span class="portal-nav-link portal-nav-link--disabled" data-tooltip="{{ module.name }} · {% if module.status == 'building' %}En obra{% else %}Pronto{% endif %}">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">{{ module.icon|safe }}</svg><span class="portal-collapsible">{{ module.name }}</span>
+                  <span class="portal-badge portal-collapsible ml-auto {% if module.status == 'building' %}portal-badge--building{% endif %}">{% if module.status == 'building' %}En obra{% else %}Pronto{% endif %}</span>
+                </span>
               {% endif %}
             {% endfor %}
-          </nav>
+          {% endif %}
+        </nav>
+
+        <!-- Acceso del usuario -->
+        <div class="portal-sidebar__card">
+          <div class="portal-collapsible flex items-center gap-2.5">
+            <span class="portal-sidebar__card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>
+            </span>
+            <p class="text-sm font-bold">Tu acceso</p>
+          </div>
+          <p class="portal-collapsible portal-muted mt-3 text-xs leading-5">{% if roles %}{{ roles|join:', ' }}{% else %}Aún no tienes un rol asignado.{% endif %}</p>
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="portal-button portal-sidebar__logout mt-4 w-full" data-tooltip="Cerrar sesión">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <span class="portal-collapsible">Cerrar sesión</span>
+            </button>
+          </form>
+        </div>
+      </aside>
+      <div id="sidebar-scrim" class="portal-scrim lg:hidden" hidden></div>
+
+      <div class="portal-workspace">
+        <!-- Barra superior -->
+        <header class="portal-topbar">
+          <button id="menu-toggle" type="button" class="portal-icon-button lg:hidden" aria-label="Abrir menú" aria-expanded="false" aria-controls="portal-sidebar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+          </button>
+
+          {% if permissions.materials %}
+            <form action="{% url 'materials:materials_list' %}" method="get" role="search" class="portal-search">
+              <label for="global-search" class="sr-only">Buscar materiales</label>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+              <input type="search" id="global-search" name="name" placeholder="Buscar materiales…" autocomplete="off" />
+            </form>
+          {% else %}
+            <p class="portal-muted hidden text-sm font-semibold capitalize sm:block">{% now "l j \d\e F" %}</p>
+          {% endif %}
 
           <div class="ml-auto flex items-center gap-2">
-            <div class="hidden md:block">{% include 'core/_accent_picker.html' %}</div>
-
-            <div class="hidden items-center gap-2 border-l-2 border-[var(--ink)] pl-3 lg:flex">
-              <span class="portal-avatar" aria-hidden="true">{{ user.first_name|default:user.username|first|upper }}</span>
-              <div class="hidden max-w-[10rem] leading-tight xl:block">
-                <p class="truncate text-sm font-bold">{{ user.get_full_name|default:user.username }}</p>
-                <p class="portal-subtle truncate text-xs">{% if roles %}{{ roles|join:', ' }}{% else %}Sin rol{% endif %}</p>
-              </div>
-              <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="portal-icon-button" aria-label="Cerrar sesión" title="Cerrar sesión">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                </button>
-              </form>
-            </div>
-
-            <button id="menu-toggle" type="button" class="portal-icon-button lg:hidden" aria-label="Abrir menú" aria-expanded="false" aria-controls="portal-sheet">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Menú en pantallas pequeñas -->
-    <div id="portal-sheet" class="portal-sheet lg:hidden" role="dialog" aria-modal="true" aria-label="Menú" hidden>
-      <div class="flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <span class="portal-avatar" aria-hidden="true">{{ user.first_name|default:user.username|first|upper }}</span>
-          <div class="leading-tight">
-            <p class="font-bold">{{ user.get_full_name|default:user.username }}</p>
-            <p class="portal-subtle text-xs">{% if roles %}{{ roles|join:', ' }}{% else %}Sin rol{% endif %}</p>
-          </div>
-        </div>
-        <button type="button" class="portal-icon-button" aria-label="Cerrar menú" data-sheet-close>
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
-        </button>
-      </div>
-
-      <nav aria-label="Navegación móvil" class="mt-5 grid gap-2">
-        <a href="{% url 'dashboard' %}" class="portal-sheet-link {% if request.resolver_match.url_name == 'dashboard' %}tone-accent{% endif %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>Inicio</a>
-        {% for module in user_modules %}
-          {% if module.url_name %}
-            <a href="{% url module.url_name %}" class="portal-sheet-link tone-{{ module.color }}" {% if request.resolver_match.namespace == module.key %}aria-current="page"{% endif %}>
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">{{ module.icon|safe }}</svg>{{ module.name }}
-            </a>
-          {% else %}
-            <span class="portal-sheet-link portal-sheet-link--disabled">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">{{ module.icon|safe }}</svg>{{ module.name }}
-              <span class="portal-badge ml-auto {% if module.status == 'building' %}portal-badge--building{% endif %}">{% if module.status == 'building' %}En obra{% else %}Pronto{% endif %}</span>
+            <span class="portal-chip hidden capitalize md:inline-flex" title="Fecha de hoy">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+              {% now "j M Y" %}
             </span>
-          {% endif %}
-        {% endfor %}
-      </nav>
+            <div class="portal-user">
+              <span class="portal-avatar" aria-hidden="true">{{ user.first_name|default:user.username|first|upper }}</span>
+              <div class="hidden max-w-[10rem] leading-tight sm:block">
+                <p class="portal-subtle truncate text-xs">@{{ user.username }}</p>
+                <p class="truncate text-sm font-bold">{{ user.get_full_name|default:user.username }}</p>
+              </div>
+            </div>
+          </div>
+        </header>
 
-      <div class="mt-5 flex items-center justify-between gap-3 border-t-2 border-dashed border-[var(--ink)] pt-5">
-        {% include 'core/_accent_picker.html' %}
-        <form action="{% url 'logout' %}" method="post">
-          {% csrf_token %}
-          <button type="submit" class="portal-button-secondary">Cerrar sesión</button>
-        </form>
+        <main id="main-content" tabindex="-1" class="portal-main">
+          {% if messages %}
+            <div class="mb-5 space-y-3">
+              {% for message in messages %}
+                <div class="portal-alert {% if message.tags == 'success' %}portal-alert--success{% elif message.tags == 'warning' %}portal-alert--warning{% elif message.tags == 'error' %}portal-alert--error{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% block content %}{% endblock %}
+        </main>
+
+        <footer class="portal-footer">
+          <span>ERP Project · {% now "Y" %}</span>
+        </footer>
       </div>
     </div>
-    <div id="sheet-scrim" class="portal-scrim lg:hidden" hidden></div>
-
-    <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pt-10">
-      {% if messages %}
-        <div class="mb-6 space-y-3">
-          {% for message in messages %}
-            <div class="portal-alert {% if message.tags == 'success' %}portal-alert--success{% elif message.tags == 'warning' %}portal-alert--warning{% elif message.tags == 'error' %}portal-alert--error{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-      {% block content %}{% endblock %}
-    </main>
-
-    <footer class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 pb-8 text-xs sm:px-6 lg:px-8">
-      <span class="portal-eyebrow">ERP Project · {% now "Y" %}</span>
-      <span class="portal-subtle">{% now "l j \d\e F" %}</span>
-    </footer>
 
     <script src="{% static 'js/script.js' %}"></script>
   </body>

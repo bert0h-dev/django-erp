@@ -30,3 +30,6 @@ htmlcov/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Contextos de desarrollo
+idea/

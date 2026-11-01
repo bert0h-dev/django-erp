@@ -1,156 +1,227 @@
 {% extends 'core/base.html' %}
 {% block title %}Inicio{% endblock %}
 {% block content %}
-  <div class="grid gap-5 lg:grid-cols-12">
-    <!-- Saludo -->
-    <section class="portal-reveal portal-card tone-accent relative overflow-hidden p-7 sm:p-9 lg:col-span-7" style="--delay: 0ms" aria-labelledby="dashboard-title">
-      <p class="portal-eyebrow text-[var(--ink)]">Tu espacio de trabajo</p>
-      <h1 id="dashboard-title" class="portal-display mt-5 text-6xl sm:text-7xl xl:text-8xl">
-        Hola,<br />{{ user.first_name|default:user.username }}.
-      </h1>
-      <p class="mt-5 max-w-md text-base font-medium sm:text-lg">Tus módulos, tus permisos y lo último que se registró, todo aquí.</p>
-      <div class="mt-7 flex flex-wrap gap-2">
-        {% for role in roles %}
-          <span class="portal-sticker tone-card">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
-            {{ role }}
+  <div class="grid gap-5 {% if user_modules %}xl:grid-cols-[minmax(0,1fr)_22rem]{% endif %}">
+    <div class="min-w-0 space-y-5">
+      <!-- Resumen: saludo y cifras principales -->
+      <section class="portal-reveal portal-card grid gap-2 p-2 md:grid-cols-3" style="--delay: 0ms" aria-labelledby="dashboard-title">
+        <div class="flex flex-col p-4">
+          <span class="portal-tile" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg>
           </span>
-        {% empty %}
-          <span class="portal-sticker tone-card">Sin rol asignado</span>
-        {% endfor %}
-      </div>
-      <!-- Sello decorativo -->
-      <svg class="pointer-events-none absolute -bottom-10 -right-10 h-48 w-48 opacity-90 sm:h-56 sm:w-56" viewBox="0 0 200 200" aria-hidden="true">
-        <g class="portal-spin">
-          <path id="stamp-circle" d="M100 100m-72 0a72 72 0 1 1 144 0a72 72 0 1 1-144 0" fill="none" />
-          <circle cx="100" cy="100" r="92" fill="var(--card)" stroke="var(--ink)" stroke-width="3" />
-          <text fill="var(--ink)" font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" letter-spacing="3.2">
-            <textPath href="#stamp-circle">ERP PROJECT ✳ OPERACIÓN EN ORDEN ✳ </textPath>
-          </text>
-          <circle cx="100" cy="100" r="34" fill="var(--ink)" />
-        </g>
-        <path d="M86 100l9 9 19-19" fill="none" stroke="var(--lime)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </section>
-
-    <!-- Cifras -->
-    <section class="grid grid-cols-2 gap-5 lg:col-span-5" aria-label="Resumen">
-      <div class="portal-reveal portal-card tone-lilac portal-stat" style="--delay: 80ms">
-        <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg></span>
-        <p class="portal-stat__value">{{ readable_count }}<span class="text-2xl">/{{ module_total }}</span></p>
-        <p class="portal-stat__label">Módulos con acceso</p>
-        <div class="portal-meter mt-4"><span style="width: {% widthratio readable_count module_total 100 %}%"></span></div>
-      </div>
-      <div class="portal-reveal portal-card tone-sky portal-stat" style="--delay: 130ms">
-        <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-        <p class="portal-stat__value">{{ writable_count }}</p>
-        <p class="portal-stat__label">Con escritura</p>
-        <div class="portal-meter mt-4"><span style="width: {% widthratio writable_count module_total 100 %}%"></span></div>
-      </div>
-      {% if materials_summary %}
-        <div class="portal-reveal portal-card tone-sun portal-stat" style="--delay: 180ms">
-          <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-          <p class="portal-stat__value">{{ materials_summary.total }}</p>
-          <p class="portal-stat__label">Materiales</p>
-        </div>
-        <div class="portal-reveal portal-card tone-mint portal-stat" style="--delay: 230ms">
-          <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-          <p class="portal-stat__value">{{ materials_summary.active }}</p>
-          <p class="portal-stat__label">Activos</p>
-          {% if materials_summary.total %}<div class="portal-meter mt-4"><span style="width: {% widthratio materials_summary.active materials_summary.total 100 %}%"></span></div>{% endif %}
-        </div>
-      {% else %}
-        <div class="portal-reveal portal-card tone-sun portal-stat col-span-2" style="--delay: 180ms">
-          <span class="portal-stat__icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg></span>
-          <p class="portal-stat__value">{{ roles|length }}</p>
-          <p class="portal-stat__label">Rol{{ roles|length|pluralize:"es" }} asignado{{ roles|length|pluralize }}</p>
-        </div>
-      {% endif %}
-    </section>
-  </div>
-
-  {% if user_modules %}
-    <div class="mt-12 grid gap-8 {% if materials_summary %}xl:grid-cols-[minmax(0,1fr)_23rem]{% endif %}">
-      <!-- Módulos -->
-      <section aria-labelledby="modules-heading">
-        <div class="mb-5 flex items-end justify-between gap-4">
-          <h2 id="modules-heading" class="portal-display text-4xl">Tus módulos</h2>
-          <span class="portal-sticker tone-card -rotate-2">{{ user_modules|length }} de {{ module_total }}</span>
+          <p class="portal-muted mt-6 text-sm">Bienvenido de vuelta</p>
+          <h1 id="dashboard-title" class="portal-display mt-1 text-3xl">Hola, {{ user.first_name|default:user.username }}</h1>
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            {% for role in roles %}
+              <span class="portal-badge">{{ role }}</span>
+            {% empty %}
+              <span class="portal-badge">Sin rol asignado</span>
+            {% endfor %}
+          </div>
         </div>
 
-        <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 {% if not materials_summary %}xl:grid-cols-3{% endif %}">
-          {% for module in user_modules %}
-            <li class="portal-reveal" style="--delay: {{ forloop.counter|add:2 }}00ms">
-              {% if module.url_name %}
-                <a href="{% url module.url_name %}" class="portal-card portal-card--lift portal-module tone-{{ module.color }} h-full">
-              {% else %}
-                <div class="portal-card portal-module portal-module--soon tone-card h-full">
-              {% endif %}
-                  <div class="flex items-start justify-between">
-                    <span class="portal-module__icon {% if not module.url_name %}tone-{{ module.color }}{% endif %}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">{{ module.icon|safe }}</svg></span>
-                    {% if module.url_name %}
-                      <span class="portal-module__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-                    {% elif module.status == 'building' %}
-                      <span class="portal-badge portal-badge--building rotate-3">En obra</span>
-                    {% else %}
-                      <span class="portal-badge rotate-3">Pronto</span>
-                    {% endif %}
-                  </div>
-                  <h3 class="portal-module__name mt-6">{{ module.name }}</h3>
-                  <p class="mt-1 flex-1 text-sm leading-6 {% if module.url_name %}font-medium{% else %}portal-muted{% endif %}">{{ module.description }}</p>
-                  <div class="mt-4">
-                    {% if module.level == 2 %}
-                      <span class="portal-badge portal-badge--ink"><i></i>Lectura y escritura</span>
-                    {% else %}
-                      <span class="portal-badge"><i></i>Solo lectura</span>
-                    {% endif %}
-                  </div>
-              {% if module.url_name %}
-                </a>
-              {% else %}
-                </div>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
+        {% if materials_summary %}
+          <div class="portal-panel">
+            <p class="font-semibold">Materiales</p>
+            <ul class="mt-2 space-y-1 text-xs">
+              <li class="portal-legend"><i class="bg-[var(--primary)]"></i>Activos: {{ materials_summary.active }}</li>
+              <li class="portal-legend"><i class="bg-[var(--accent)]"></i>Este mes: {{ materials_summary.chart.current }}</li>
+            </ul>
+            <div class="mt-auto flex items-end justify-between pt-6">
+              <p class="portal-stat__value">{{ materials_summary.total }}</p>
+              <p class="portal-muted text-sm tabular-nums">{% if materials_summary.total %}{% widthratio materials_summary.active materials_summary.total 100 %}{% else %}0{% endif %}% activos</p>
+            </div>
+            <div class="portal-meter mt-3"><span style="width: {% if materials_summary.total %}{% widthratio materials_summary.active materials_summary.total 100 %}{% else %}0{% endif %}%"></span></div>
+          </div>
+        {% else %}
+          <div class="portal-panel">
+            <p class="font-semibold">Roles</p>
+            <p class="portal-muted mt-2 text-xs">Definen qué módulos puedes ver y editar.</p>
+            <p class="portal-stat__value mt-auto pt-6">{{ roles|length }}</p>
+          </div>
+        {% endif %}
+
+        <div class="portal-panel">
+          <p class="font-semibold">Módulos con acceso</p>
+          <ul class="mt-2 space-y-1 text-xs">
+            <li class="portal-legend"><i class="bg-[var(--secondary)]"></i>Con escritura: {{ writable_count }}</li>
+            <li class="portal-legend"><i class="bg-[var(--line)]"></i>En el catálogo: {{ module_total }}</li>
+          </ul>
+          <div class="mt-auto flex items-end justify-between pt-6">
+            <p class="portal-stat__value">{{ readable_count }}<span class="portal-subtle text-xl">/{{ module_total }}</span></p>
+            <p class="portal-muted text-sm tabular-nums">{% widthratio readable_count module_total 100 %}%</p>
+          </div>
+          <div class="portal-meter portal-meter--secondary mt-3"><span style="width: {% widthratio readable_count module_total 100 %}%"></span></div>
+        </div>
       </section>
 
       {% if materials_summary %}
-        <!-- Materiales recientes -->
-        <section class="portal-reveal" style="--delay: 500ms" aria-labelledby="recent-heading">
-          <div class="mb-5 flex items-end justify-between gap-4">
-            <h2 id="recent-heading" class="portal-display text-4xl">Lo último</h2>
-            <a href="{% url 'materials:materials_list' %}" class="portal-sticker tone-lime rotate-2 transition hover:rotate-0">Ver todo →</a>
-          </div>
-          <div class="portal-card overflow-hidden">
-            <p class="tone-ink px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em]">Materiales recientes</p>
-            {% if materials_summary.recent %}
-              <ul>
-                {% for material in materials_summary.recent %}
-                  <li class="flex items-center gap-3 border-t-[1.5px] border-dashed border-[rgb(22_19_15/0.2)] px-5 py-3.5 first:border-t-0">
-                    <span class="grid h-10 w-10 flex-none place-items-center rounded-xl border-2 border-[var(--ink)] font-mono text-xs font-bold {% cycle 'tone-lime' 'tone-lilac' 'tone-sky' 'tone-pink' 'tone-sun' %}">{{ material.material_type|default:"?"|first|upper }}</span>
-                    <div class="min-w-0 flex-1">
-                      <p class="truncate font-bold">{{ material }}</p>
-                      <p class="portal-subtle truncate text-xs"><span class="font-mono">{{ material.id_material|default:"Sin ID" }}</span> · {{ material.created_by.username|default:"—" }}</p>
-                    </div>
-                    <time class="portal-subtle flex-none font-mono text-xs" datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:'j M' }}</time>
+        <div class="grid gap-5 lg:grid-cols-2">
+          <!-- Registros por mes -->
+          <section class="portal-reveal portal-card p-5" style="--delay: 80ms" aria-labelledby="chart-heading">
+            <div class="flex items-start justify-between gap-3">
+              <h2 id="chart-heading" class="portal-card-title">Materiales registrados</h2>
+              <span class="portal-chip">Últimos 6 meses</span>
+            </div>
+            <p class="portal-stat__value mt-4">{{ materials_summary.chart.total }}</p>
+            <p class="mt-2 flex items-center gap-2 text-sm">
+              {% if materials_summary.chart.change > 0 %}
+                <span class="portal-trend portal-trend--up">+{{ materials_summary.chart.change }}</span>
+              {% elif materials_summary.chart.change < 0 %}
+                <span class="portal-trend portal-trend--down">{{ materials_summary.chart.change }}</span>
+              {% else %}
+                <span class="portal-trend">0</span>
+              {% endif %}
+              <span class="portal-muted">este mes contra el anterior</span>
+            </p>
+
+            <figure class="portal-chart mt-5">
+              <svg viewBox="0 0 600 200" preserveAspectRatio="none" role="img" aria-labelledby="chart-heading chart-desc">
+                <desc id="chart-desc">{% for point in materials_summary.chart.points %}{{ point.label }}: {{ point.value }}{% if not forloop.last %}, {% endif %}{% endfor %}</desc>
+                <defs>
+                  <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="var(--secondary)" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="var(--secondary)" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <g class="portal-chart__grid">
+                  <line x1="0" x2="600" y1="16" y2="16" /><line x1="0" x2="600" y1="72" y2="72" /><line x1="0" x2="600" y1="128" y2="128" /><line x1="0" x2="600" y1="184" y2="184" />
+                </g>
+                <path d="{{ materials_summary.chart.area }}" fill="url(#chart-fill)" />
+                <path class="portal-chart__line" d="{{ materials_summary.chart.line }}" pathLength="1" />
+                <line class="portal-chart__guide" x1="{{ materials_summary.chart.last.x|stringformat:"s" }}" x2="{{ materials_summary.chart.last.x|stringformat:"s" }}" y1="{{ materials_summary.chart.last.y|stringformat:"s" }}" y2="200" />
+              </svg>
+              {% for point in materials_summary.chart.points %}
+                <span class="portal-chart__dot {% if forloop.last %}is-current{% endif %}" style="left: {% widthratio point.x 600 100 %}%; top: {% widthratio point.y 200 100 %}%" title="{{ point.label }}: {{ point.value }}" aria-hidden="true"></span>
+              {% endfor %}
+              <span class="portal-chart__tip" style="left: {% widthratio materials_summary.chart.last.x 600 100 %}%; top: {% widthratio materials_summary.chart.last.y 200 100 %}%" aria-hidden="true">
+                {{ materials_summary.chart.last.value }} <small>{{ materials_summary.chart.last.label }}</small>
+              </span>
+            </figure>
+            <div class="portal-chart__labels" aria-hidden="true">
+              {% for point in materials_summary.chart.points %}<span {% if forloop.last %}class="is-current"{% endif %}>{{ point.label }}</span>{% endfor %}
+            </div>
+          </section>
+
+          <!-- Tipos de material -->
+          <section class="portal-reveal portal-card p-5" style="--delay: 140ms" aria-labelledby="types-heading">
+            <div class="flex items-start justify-between gap-3">
+              <h2 id="types-heading" class="portal-card-title">Tipos de material</h2>
+              {% if permissions.materials >= 2 %}
+                <a href="{% url 'materials:material_create' %}" class="portal-button-secondary portal-button--sm">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                  Agregar
+                </a>
+              {% endif %}
+            </div>
+            {% if materials_summary.types %}
+              <ul class="mt-4 space-y-3">
+                {% for type in materials_summary.types %}
+                  <li>
+                    <a href="{% url 'materials:materials_list' %}?material_type={{ type.name|urlencode }}" class="portal-row">
+                      <span class="portal-tile" aria-hidden="true">{{ type.name|first|upper }}</span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block truncate text-sm font-semibold">{{ type.name }}</span>
+                        <span class="portal-subtle block text-xs">{{ type.share }}% del catálogo</span>
+                      </span>
+                      <span class="text-sm font-bold tabular-nums">{{ type.count }}</span>
+                    </a>
                   </li>
                 {% endfor %}
               </ul>
             {% else %}
-              <p class="portal-muted px-5 py-10 text-center text-sm">Todavía no hay materiales registrados.</p>
+              <p class="portal-muted py-10 text-center text-sm">Aún no hay tipos registrados.</p>
             {% endif %}
+          </section>
+        </div>
+
+        <!-- Materiales recientes -->
+        <section class="portal-reveal portal-card p-5" style="--delay: 200ms" aria-labelledby="recent-heading">
+          <div class="flex items-center justify-between gap-3">
+            <h2 id="recent-heading" class="portal-card-title">Materiales recientes</h2>
+            <a href="{% url 'materials:materials_list' %}" class="portal-button-secondary portal-button--sm">Ver todos</a>
           </div>
+          {% if materials_summary.recent %}
+            <div class="portal-table-wrap mt-4">
+              <table class="portal-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Material</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Creado por</th>
+                    <th scope="col" class="text-right">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for material in materials_summary.recent %}
+                    <tr>
+                      <td class="max-w-[16rem]">
+                        <p class="truncate font-semibold">{{ material }}</p>
+                        <p class="portal-subtle font-mono text-xs">{{ material.id_material|default:"Sin ID" }}</p>
+                      </td>
+                      <td class="whitespace-nowrap">{{ material.material_type|default:"—" }}</td>
+                      <td>{% include 'materials/_status.html' %}</td>
+                      <td class="whitespace-nowrap">{{ material.created_by.username|default:"—" }}</td>
+                      <td class="portal-muted whitespace-nowrap text-right tabular-nums"><time datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:'j M Y' }}</time></td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="portal-muted py-10 text-center text-sm">Todavía no hay materiales registrados.</p>
+          {% endif %}
+        </section>
+      {% elif not user_modules %}
+        <section class="portal-reveal portal-card flex flex-col items-center px-6 py-14 text-center" style="--delay: 80ms">
+          <span class="portal-tile portal-tile--lg" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+          </span>
+          <h2 class="portal-card-title mt-5">Aún no tienes módulos</h2>
+          <p class="portal-muted mt-2 max-w-md text-sm">Pide al administrador que te asigne un rol con permisos desde el panel de administración.</p>
         </section>
       {% endif %}
     </div>
-  {% else %}
-    <section class="portal-reveal portal-card portal-module--soon tone-card mt-12 flex flex-col items-center px-6 py-14 text-center" style="--delay: 200ms">
-      <span class="portal-module__icon tone-sun">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
-      </span>
-      <h2 class="portal-display mt-5 text-3xl">Aún no tienes módulos</h2>
-      <p class="portal-muted mt-2 max-w-md text-sm">Pide al administrador que te asigne un rol con permisos desde el panel de administración.</p>
-    </section>
-  {% endif %}
+
+    <!-- Columna derecha: módulos del usuario -->
+    {% if user_modules %}
+      <aside class="space-y-5" aria-label="Tus módulos">
+        <section class="portal-reveal portal-card p-5" style="--delay: 120ms" aria-labelledby="modules-heading">
+          <div class="flex items-center justify-between gap-3">
+            <h2 id="modules-heading" class="portal-card-title">Tus módulos</h2>
+            <span class="portal-chip">{{ user_modules|length }} de {{ module_total }}</span>
+          </div>
+
+          <ul class="mt-4 space-y-2">
+            {% for module in user_modules %}
+              <li>
+                {% if module.url_name %}<a href="{% url module.url_name %}" class="portal-row">{% else %}<div class="portal-row portal-row--muted">{% endif %}
+                  <span class="portal-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">{{ module.icon|safe }}</svg></span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-semibold">{{ module.name }}</span>
+                    <span class="portal-subtle block text-xs">{% if module.level == 2 %}Lectura y escritura{% else %}Solo lectura{% endif %}</span>
+                  </span>
+                  {% if module.url_name %}
+                    <svg class="portal-row__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  {% elif module.status == 'building' %}
+                    <span class="portal-badge portal-badge--building">En obra</span>
+                  {% else %}
+                    <span class="portal-badge">Pronto</span>
+                  {% endif %}
+                {% if module.url_name %}</a>{% else %}</div>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="portal-reveal portal-card portal-card--brand p-5" style="--delay: 180ms" aria-labelledby="access-heading">
+          <h2 id="access-heading" class="text-sm font-semibold">Nivel de acceso</h2>
+          <p class="portal-display mt-3 text-4xl">{{ writable_count }}<span class="text-xl opacity-70"> / {{ readable_count }}</span></p>
+          <p class="mt-1 text-sm opacity-80">módulos donde puedes registrar y editar</p>
+          <div class="portal-meter portal-meter--on-brand mt-4"><span style="width: {% if readable_count %}{% widthratio writable_count readable_count 100 %}{% else %}0{% endif %}%"></span></div>
+        </section>
+      </aside>
+    {% endif %}
+  </div>
 {% endblock %}
