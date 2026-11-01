@@ -46,7 +46,7 @@ def materials_list(request):
     response.write('\ufeff'.encode('utf-8'))
     writer = csv.writer(response)
 
-    writer.writerow(["ID Material", 'Name', 'Description', 'Unit', 'Type', 'Status', 'Created By', 'Created At', 'Update At'])
+    writer.writerow(["ID Material", 'Nombre', 'Descripción', 'Unidad', 'Tipo', 'Status', 'Creado Por', 'Creado En', 'Actualizado En'])
 
     for material in materials_list:
       writer.writerow([

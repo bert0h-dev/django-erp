@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.utils import timezone
 from materials.models import Material
+from suppliers.models import Suppliers
 from users.permissions import get_user_permissions
 from .modules import MODULE_CATALOG
 
@@ -74,7 +75,7 @@ def dashboard_view(request):
         'writable_count': sum(1 for level in permissions.values() if level == 2),
     }
 
-    if permissions['materials'] > 0:
+    if permissions.get('materials', 0) > 0:
         total = Material.objects.count()
         types = (
             Material.objects.exclude(material_type='')
@@ -91,6 +92,24 @@ def dashboard_view(request):
                 for row in types
             ],
             'chart': get_monthly_chart(),
+        }
+
+    if permissions.get('suppliers', 0) > 0:
+        total = Suppliers.objects.count()
+        countryes = (
+            Suppliers.objects.exclude(country='')
+            .values('country')
+            .annotate(count=Count('id'))
+            .order_by('-count', 'country')[:4]
+        )
+        context['suppliers_summary'] = {
+            'total': total,
+            'active': Suppliers.objects.filter(status='Active').count(),
+            'recent': Suppliers.objects.select_related('created_by')[:5],
+            'countries': [
+                {'name': row['country'], 'count': row['count'], 'share': round(row['count'] * 100 / total)}
+                for row in countryes
+            ],
         }
 
     return render(request, 'core/dashboard.html', context)

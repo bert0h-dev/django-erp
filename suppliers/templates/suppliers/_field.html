@@ -1,0 +1,23 @@
+{% comment %}
+  Campo de texto del formulario de proveedores.
+  Recibe: field, label y opcionalmente placeholder, type, inputmode, autocomplete, list, preview (clave de la vista previa), mono y optional.
+{% endcomment %}
+<div>
+  <label for="{{ field.id_for_label }}" class="portal-label">{{ label }}{% if optional %} <span class="portal-subtle font-normal">(opcional)</span>{% endif %}</label>
+  <input
+    type="{{ type|default:'text' }}"
+    name="{{ field.html_name }}"
+    id="{{ field.id_for_label }}"
+    value="{{ field.value|default_if_none:'' }}"
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if field.field.max_length %}maxlength="{{ field.field.max_length }}"{% endif %}
+    {% if field.field.required %}required{% endif %}
+    {% if inputmode %}inputmode="{{ inputmode }}"{% endif %}
+    {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+    {% if list %}list="{{ list }}"{% endif %}
+    {% if preview %}data-preview-source="{{ preview }}"{% endif %}
+    class="portal-field{% if mono %} font-mono{% endif %}"
+    {% if field.errors %}aria-invalid="true" aria-describedby="{{ field.id_for_label }}_errors"{% endif %}
+  />
+  {% if field.errors %}<div id="{{ field.id_for_label }}_errors" class="portal-field-error">{% for error in field.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+</div>

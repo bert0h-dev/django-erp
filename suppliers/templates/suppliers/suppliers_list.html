@@ -1,0 +1,251 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Proveedores{% endblock %}
+
+{% block content %}
+  <!-- Encabezado -->
+  <section class="portal-reveal flex flex-col justify-between gap-4 md:flex-row md:items-end" style="--delay: 0ms">
+    <div>
+      <p class="portal-eyebrow">Compras</p>
+      <h1 class="portal-display mt-1 text-3xl">Proveedores</h1>
+      <p class="portal-muted mt-1 text-sm">Datos fiscales, contacto y condiciones de pago de cada proveedor.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% querystring export='csv' page=None %}" class="portal-button-secondary">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4m-3 7v2h14v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        Exportar CSV
+      </a>
+      {% if permissions.suppliers >= 2 %}
+        <a href="{% url 'suppliers:supplier_create' %}" class="portal-button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+          Crear proveedor
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Resumen de todos los proveedores -->
+  <section class="portal-reveal portal-card mt-5 grid grid-cols-2 gap-2 p-2 lg:grid-cols-4" style="--delay: 60ms" aria-label="Resumen de proveedores">
+    <div class="portal-panel portal-panel--plain">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">En total</p>
+        <span class="portal-tile portal-tile--sm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /><circle cx="7.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.8" /><circle cx="17.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.8" /></svg></span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.total }}</p>
+    </div>
+    <div class="portal-panel">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">Activos</p>
+        <span class="portal-muted text-sm tabular-nums">{% if summary.total %}{% widthratio summary.active summary.total 100 %}{% else %}0{% endif %}%</span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.active }}</p>
+      <div class="portal-meter mt-3"><span style="width: {% if summary.total %}{% widthratio summary.active summary.total 100 %}{% else %}0{% endif %}%"></span></div>
+    </div>
+    <div class="portal-panel">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">Inactivos</p>
+        <span class="portal-muted text-sm tabular-nums">{% if summary.total %}{% widthratio summary.inactive summary.total 100 %}{% else %}0{% endif %}%</span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.inactive }}</p>
+      <div class="portal-meter portal-meter--secondary mt-3"><span style="width: {% if summary.total %}{% widthratio summary.inactive summary.total 100 %}{% else %}0{% endif %}%"></span></div>
+    </div>
+    <div class="portal-panel portal-panel--plain">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold">País{{ summary.countries|pluralize:"es" }}</p>
+        <span class="portal-tile portal-tile--sm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" /><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg></span>
+      </div>
+      <p class="portal-stat__value mt-4">{{ summary.countries }}</p>
+    </div>
+  </section>
+
+  <!-- Filtros y listado -->
+  <section class="portal-reveal portal-card mt-5 p-5" style="--delay: 120ms" aria-labelledby="list-heading">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 id="list-heading" class="portal-card-title">Listado</h2>
+      <span class="portal-chip">
+        {% if page_obj.paginator.count %}{{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}{% else %}0 resultados{% endif %}
+      </span>
+    </div>
+
+    <form method="get" action="{% url 'suppliers:suppliers_list' %}" class="mt-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1.4fr_1fr_0.8fr_auto]" data-loading-form aria-label="Filtros">
+      <div>
+        <label for="id_supplier" class="portal-label">ID de proveedor</label>
+        <div class="portal-field-wrap">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+          <input type="text" name="id_supplier" id="id_supplier" value="{{ request.GET.id_supplier }}" placeholder="PR-001" class="portal-field font-mono" />
+        </div>
+      </div>
+      <div>
+        <label for="name" class="portal-label">Nombre</label>
+        <div class="portal-field-wrap">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+          <input type="search" name="name" id="name" value="{{ request.GET.name }}" placeholder="Buscar por nombre" class="portal-field" />
+        </div>
+      </div>
+      <div>
+        <label for="country" class="portal-label">País</label>
+        <select name="country" id="country" class="portal-field">
+          <option value="" {% if not request.GET.country %}selected{% endif %}>Todos</option>
+          {% for country in all_countries %}
+            <option value="{{ country }}" {% if request.GET.country == country %}selected{% endif %}>{{ country }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="status" class="portal-label">Estado</label>
+        <select name="status" id="status" class="portal-field">
+          <option value="" {% if not request.GET.status %}selected{% endif %}>Todos</option>
+          <option value="Active" {% if request.GET.status == 'Active' %}selected{% endif %}>Activo</option>
+          <option value="Inactive" {% if request.GET.status == 'Inactive' %}selected{% endif %}>Inactivo</option>
+        </select>
+      </div>
+      <div class="flex gap-2 sm:col-span-2 xl:col-span-1">
+        <button type="submit" data-loading-label="Filtrando..." class="portal-button flex-1 xl:flex-none">
+          <span data-submit-label>Filtrar</span>
+          <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+        </button>
+        {% if has_filters %}
+          <a href="{% url 'suppliers:suppliers_list' %}" class="portal-button-secondary !px-3" aria-label="Limpiar filtros" title="Limpiar filtros">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if has_filters %}
+      <div class="mt-4 flex flex-wrap items-center gap-2" aria-label="Filtros activos">
+        <span class="portal-subtle mr-1 text-xs font-semibold">Filtros activos</span>
+        {% if request.GET.id_supplier %}
+          <span class="portal-filter-chip">ID: {{ request.GET.id_supplier }}<a href="{% querystring id_supplier=None page=None %}" aria-label="Quitar filtro de ID"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+        {% endif %}
+        {% if request.GET.name %}
+          <span class="portal-filter-chip">Nombre: {{ request.GET.name }}<a href="{% querystring name=None page=None %}" aria-label="Quitar filtro de nombre"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+        {% endif %}
+        {% if request.GET.country %}
+          <span class="portal-filter-chip">País: {{ request.GET.country }}<a href="{% querystring country=None page=None %}" aria-label="Quitar filtro de país"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+        {% endif %}
+        {% if request.GET.status %}
+          <span class="portal-filter-chip">Estado: {% if request.GET.status == 'Active' %}Activo{% elif request.GET.status == 'Inactive' %}Inactivo{% else %}{{ request.GET.status }}{% endif %}<a href="{% querystring status=None page=None %}" aria-label="Quitar filtro de estado"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if page_obj %}
+      <!-- Tabla (md en adelante) -->
+      <div class="portal-table-wrap mt-5 hidden md:block">
+        <table class="portal-table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Proveedor</th>
+              <th scope="col">Contacto</th>
+              <th scope="col">Ubicación</th>
+              <th scope="col">Categoría</th>
+              <th scope="col">Estado</th>
+              {% if permissions.suppliers >= 2 %}<th scope="col" class="text-right">Acciones</th>{% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for supplier in page_obj %}
+              <tr>
+                <td class="whitespace-nowrap"><span class="portal-code">{{ supplier.id_supplier|default:"—" }}</span></td>
+                <td class="max-w-[16rem]">
+                  <p class="truncate font-semibold">{{ supplier.name }}</p>
+                  <p class="portal-subtle truncate text-xs" title="{{ supplier.legal_name }}">{{ supplier.legal_name|default:"Sin razón social" }} · {{ supplier.tax_id }}</p>
+                </td>
+                <td class="max-w-[14rem]">
+                  <p class="truncate">{{ supplier.contact_name }}</p>
+                  <a href="mailto:{{ supplier.email }}" class="portal-subtle block truncate text-xs hover:text-[var(--primary)]">{{ supplier.email }}</a>
+                </td>
+                <td class="whitespace-nowrap">
+                  <p>{{ supplier.city }}</p>
+                  <p class="portal-subtle text-xs">{{ supplier.state_province }}, {{ supplier.country }}</p>
+                </td>
+                <td class="whitespace-nowrap">{{ supplier.category|default:"—" }}</td>
+                <td>{% include 'suppliers/_status.html' %}</td>
+                {% if permissions.suppliers >= 2 %}
+                  <td class="whitespace-nowrap text-right">{% include 'suppliers/_row_actions.html' %}</td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tarjetas (móvil) -->
+      <ul class="mt-4 space-y-2 md:hidden">
+        {% for supplier in page_obj %}
+          <li class="portal-row portal-row--static items-start">
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="portal-code">{{ supplier.id_supplier|default:"—" }}</span>
+                {% include 'suppliers/_status.html' %}
+              </div>
+              <p class="mt-2 truncate font-semibold">{{ supplier.name }}</p>
+              <p class="portal-subtle mt-0.5 text-xs">{{ supplier.category|default:"Sin categoría" }} · {{ supplier.city }}, {{ supplier.country }}</p>
+              <p class="portal-subtle mt-0.5 truncate text-xs">{{ supplier.contact_name }} · {{ supplier.email }}</p>
+            </div>
+            {% if permissions.suppliers >= 2 %}
+              <div class="flex flex-none">{% include 'suppliers/_row_actions.html' %}</div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <!-- Sin resultados -->
+      <div class="portal-empty mt-5">
+        <span class="portal-tile portal-tile--lg" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+        </span>
+        <p class="portal-card-title mt-4">Nada por aquí</p>
+        {% if has_filters %}
+          <p class="portal-muted mt-1 text-sm">Ningún proveedor coincide con los filtros.</p>
+          <a href="{% url 'suppliers:suppliers_list' %}" class="portal-button-secondary mt-5">Quitar filtros</a>
+        {% else %}
+          <p class="portal-muted mt-1 text-sm">Cuando registres uno, aparecerá en esta lista.</p>
+          {% if permissions.suppliers >= 2 %}
+            <a href="{% url 'suppliers:supplier_create' %}" class="portal-button mt-5">Registrar el primero</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
+      <nav class="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row" aria-label="Paginación">
+        <p class="portal-muted text-sm">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</p>
+        <div class="flex flex-wrap items-center gap-1.5">
+          {% if page_obj.has_previous %}
+            <a href="{% querystring page=page_obj.previous_page_number %}" class="portal-page-link" aria-label="Página anterior">&larr;</a>
+          {% endif %}
+          {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+              <span class="portal-page-link" aria-current="page">{{ i }}</span>
+            {% else %}
+              <a href="{% querystring page=i %}" class="portal-page-link">{{ i }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <a href="{% querystring page=page_obj.next_page_number %}" class="portal-page-link" aria-label="Página siguiente">&rarr;</a>
+          {% endif %}
+        </div>
+      </nav>
+    {% endif %}
+  </section>
+
+  {% if permissions.suppliers >= 2 %}
+    <!-- Confirmación de borrado (la abre script.js desde los formularios con data-confirm) -->
+    <dialog id="confirm-dialog" class="portal-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+      <div class="p-6">
+        <span class="portal-tile portal-tile--lg portal-tile--danger" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </span>
+        <h2 id="confirm-title" class="portal-card-title mt-4 !text-xl">¿Eliminar proveedor?</h2>
+        <p id="confirm-text" class="portal-muted mt-2 text-sm leading-6">Vas a eliminar <strong class="text-[var(--ink)]" data-confirm-name></strong>. Esta acción no se puede deshacer.</p>
+        <form method="dialog" class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button value="cancel" class="portal-button-secondary" autofocus>Cancelar</button>
+          <button value="confirm" class="portal-button-danger">Sí, eliminar</button>
+        </form>
+      </div>
+    </dialog>
+  {% endif %}
+{% endblock %}

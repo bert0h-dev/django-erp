@@ -17,7 +17,7 @@
 
   <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_23rem]">
     <!-- Formulario -->
-    <form method="post" class="portal-reveal portal-card p-5 sm:p-7" style="--delay: 60ms" data-loading-form data-material-form novalidate>
+    <form method="post" class="portal-reveal portal-card p-5 sm:p-7" style="--delay: 60ms" data-loading-form data-preview-form novalidate>
       {% csrf_token %}
 
       {% for error in form.non_field_errors %}

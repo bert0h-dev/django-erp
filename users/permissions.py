@@ -15,11 +15,14 @@ MODULES = (
 
 
 def get_user_permissions(user):
-    """Devuelve el nivel máximo (0, 1 o 2) por módulo entre todos los roles del usuario."""
+    """Devuelve el nivel máximo (1 o 2) por módulo entre todos los roles del usuario.
+
+    Los módulos sin acceso (nivel 0) no se incluyen: usa `permissions.get(module, 0)` para consultarlos.
+    """
     permissions = dict.fromkeys(MODULES, 0)
 
     if not user.is_authenticated:
-        return permissions
+        return {}
 
     levels = UserRole.objects.filter(user_id=user).aggregate(
         **{module: Max(f'role__{module}') for module in MODULES}
@@ -27,7 +30,7 @@ def get_user_permissions(user):
     for module, level in levels.items():
         permissions[module] = level or 0
 
-    return permissions
+    return {module: level for module, level in permissions.items() if level != 0}
 
 
 def get_module_permission(user, module):

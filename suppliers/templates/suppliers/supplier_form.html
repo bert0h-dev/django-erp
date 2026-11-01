@@ -1,0 +1,198 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{% if supplier %}Editar proveedor{% else %}Crear proveedor{% endif %}{% endblock %}
+
+{% block content %}
+  <section class="portal-reveal" style="--delay: 0ms">
+    <nav aria-label="Ruta" class="portal-crumbs">
+      <a href="{% url 'suppliers:suppliers_list' %}">Proveedores</a>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span aria-current="page">{% if supplier %}Editar{% else %}Nuevo{% endif %}</span>
+    </nav>
+    <h1 class="portal-display mt-2 text-3xl">{% if supplier %}Editar {{ supplier }}{% else %}Nuevo proveedor{% endif %}</h1>
+    <p class="portal-muted mt-1 text-sm">
+      {% if supplier %}Actualiza la información del proveedor.{% else %}Completa sus datos fiscales, de contacto y de pago.{% endif %}
+    </p>
+  </section>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_23rem]">
+    <!-- Formulario -->
+    <form method="post" class="portal-reveal portal-card p-5 sm:p-7" style="--delay: 60ms" data-loading-form data-preview-form novalidate>
+      {% csrf_token %}
+
+      {% for error in form.non_field_errors %}
+        <div class="portal-alert portal-alert--error mb-6" role="alert">{{ error }}</div>
+      {% endfor %}
+
+      <fieldset>
+        <legend class="portal-step"><span>1</span>Identificación</legend>
+        <div class="mt-5 grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
+          {% include 'suppliers/_field.html' with field=form.id_supplier label='ID de proveedor' placeholder='PR-001' autocomplete='off' preview='id' mono=True %}
+          {% include 'suppliers/_field.html' with field=form.name label='Nombre comercial' placeholder='Ej. Harinas del Norte' preview='name' %}
+        </div>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          {% include 'suppliers/_field.html' with field=form.legal_name label='Razón social' placeholder='Ej. Harinas del Norte S.A. de C.V.' preview='legal' optional=True %}
+          {% include 'suppliers/_field.html' with field=form.tax_id label='ID fiscal (RFC)' placeholder='HNO010101ABC' autocomplete='off' preview='tax' mono=True %}
+        </div>
+        <div class="mt-5">
+          {% include 'suppliers/_field.html' with field=form.category label='Categoría' placeholder='Escribe o elige una' autocomplete='off' list='category-options' preview='category' %}
+          <datalist id="category-options">
+            {% for category in categories %}<option value="{{ category }}"></option>{% endfor %}
+          </datalist>
+        </div>
+      </fieldset>
+
+      <fieldset class="portal-divider mt-8 pt-7">
+        <legend class="sr-only">Ubicación</legend>
+        <p class="portal-step" aria-hidden="true"><span>2</span>Ubicación</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+          {% include 'suppliers/_field.html' with field=form.country label='País' placeholder='México' autocomplete='country-name' list='country-options' preview='country' %}
+          {% include 'suppliers/_field.html' with field=form.state_province label='Estado o provincia' placeholder='Nuevo León' autocomplete='address-level1' %}
+          {% include 'suppliers/_field.html' with field=form.city label='Ciudad' placeholder='Monterrey' autocomplete='address-level2' preview='city' %}
+        </div>
+        <datalist id="country-options">
+          <option value="México"></option>
+          <option value="Estados Unidos"></option>
+          <option value="Canadá"></option>
+        </datalist>
+        <div class="mt-5 grid gap-5 sm:grid-cols-[minmax(0,1fr)_10rem]">
+          {% include 'suppliers/_field.html' with field=form.address label='Dirección' placeholder='Calle, número y colonia' autocomplete='street-address' %}
+          {% include 'suppliers/_field.html' with field=form.zip_code label='Código postal' placeholder='64000' inputmode='numeric' autocomplete='postal-code' mono=True %}
+        </div>
+      </fieldset>
+
+      <fieldset class="portal-divider mt-8 pt-7">
+        <legend class="sr-only">Contacto</legend>
+        <p class="portal-step" aria-hidden="true"><span>3</span>Contacto</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          {% include 'suppliers/_field.html' with field=form.contact_name label='Nombre del contacto' placeholder='Ej. Laura Pérez' autocomplete='off' preview='contact' %}
+          {% include 'suppliers/_field.html' with field=form.contact_role label='Puesto del contacto' placeholder='Ej. Ventas' autocomplete='off' %}
+          {% include 'suppliers/_field.html' with field=form.email label='Correo electrónico' placeholder='ventas@proveedor.com' type='email' autocomplete='off' preview='email' %}
+          {% include 'suppliers/_field.html' with field=form.phone label='Teléfono' placeholder='8112345678' type='tel' inputmode='numeric' autocomplete='off' preview='phone' %}
+        </div>
+        <p class="portal-hint">Escribe el teléfono solo con números, sin espacios ni guiones.</p>
+      </fieldset>
+
+      <fieldset class="portal-divider mt-8 pt-7">
+        <legend class="sr-only">Pago</legend>
+        <p class="portal-step" aria-hidden="true"><span>4</span>Condiciones de pago</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+          {% include 'suppliers/_field.html' with field=form.payment_terms label='Plazo de pago' placeholder='30 días' autocomplete='off' list='terms-options' %}
+          {% include 'suppliers/_field.html' with field=form.currency label='Moneda' placeholder='MXN' autocomplete='off' list='currency-options' %}
+          {% include 'suppliers/_field.html' with field=form.payment_method label='Método de pago' placeholder='Transferencia' autocomplete='off' list='method-options' %}
+        </div>
+        <datalist id="terms-options">
+          <option value="Contado"></option>
+          <option value="15 días"></option>
+          <option value="30 días"></option>
+          <option value="60 días"></option>
+        </datalist>
+        <datalist id="currency-options">
+          <option value="MXN"></option>
+          <option value="USD"></option>
+          <option value="EUR"></option>
+        </datalist>
+        <datalist id="method-options">
+          <option value="Transferencia"></option>
+          <option value="Cheque"></option>
+          <option value="Efectivo"></option>
+          <option value="Tarjeta"></option>
+        </datalist>
+        <div class="mt-5">
+          {% include 'suppliers/_field.html' with field=form.bank_account label='Cuenta bancaria (CLABE)' placeholder='18 dígitos' autocomplete='off' mono=True %}
+        </div>
+
+        <div class="mt-6">
+          <p id="status-label" class="portal-label">Estado</p>
+          <div class="portal-segmented" role="radiogroup" aria-labelledby="status-label">
+            <input type="radio" name="{{ form.status.html_name }}" id="status-active" value="Active" {% if form.status.value == 'Active' %}checked{% endif %} data-preview-source="status" />
+            <label for="status-active">Activo</label>
+            <input type="radio" name="{{ form.status.html_name }}" id="status-inactive" value="Inactive" {% if form.status.value == 'Inactive' %}checked{% endif %} data-preview-source="status" />
+            <label for="status-inactive">Inactivo</label>
+          </div>
+          {% if form.status.errors %}<div class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+        </div>
+      </fieldset>
+
+      <div class="portal-divider mt-8 flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:justify-end">
+        <a href="{% url 'suppliers:suppliers_list' %}" class="portal-button-secondary">Cancelar</a>
+        <button type="submit" data-loading-label="{% if supplier %}Guardando...{% else %}Creando...{% endif %}" class="portal-button">
+          <span data-submit-label>{% if supplier %}Guardar cambios{% else %}Crear proveedor{% endif %}</span>
+          <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Ficha del proveedor (vista previa en vivo) y registro -->
+    <aside class="space-y-5 lg:sticky lg:top-5 lg:self-start" aria-label="Vista previa">
+      <div class="portal-reveal portal-card p-5" style="--delay: 120ms">
+        <div class="flex items-center justify-between gap-3">
+          <p class="portal-card-title">Ficha del proveedor</p>
+          <span data-preview="status">
+            {% if form.status.value == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--active">Activo</span>{% endif %}
+          </span>
+        </div>
+        <p class="portal-subtle mt-1 text-xs">Se actualiza mientras escribes.</p>
+
+        <div class="portal-slot mt-5" aria-hidden="true"></div>
+        <div class="portal-receipt">
+          <span class="portal-code" data-preview="id" data-empty="SIN-ID">{{ form.id_supplier.value|default:'SIN-ID' }}</span>
+          <p class="mt-3 break-words text-xl font-bold leading-tight" data-preview="name" data-empty="Proveedor sin nombre">{{ form.name.value|default:'Proveedor sin nombre' }}</p>
+          <p class="portal-muted mt-1 break-words text-sm leading-6" data-preview="legal" data-empty="Sin razón social">{{ form.legal_name.value|default:'Sin razón social' }}</p>
+          <dl class="portal-receipt__rows">
+            <div>
+              <dt>ID fiscal</dt>
+              <dd class="font-mono" data-preview="tax" data-empty="—">{{ form.tax_id.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>Categoría</dt>
+              <dd data-preview="category" data-empty="—">{{ form.category.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>Ciudad</dt>
+              <dd data-preview="city" data-empty="—">{{ form.city.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>País</dt>
+              <dd data-preview="country" data-empty="—">{{ form.country.value|default:'—' }}</dd>
+            </div>
+          </dl>
+          <dl class="portal-receipt__rows">
+            <div>
+              <dt>Contacto</dt>
+              <dd data-preview="contact" data-empty="—">{{ form.contact_name.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>Correo</dt>
+              <dd data-preview="email" data-empty="—">{{ form.email.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>Teléfono</dt>
+              <dd class="tabular-nums" data-preview="phone" data-empty="—">{{ form.phone.value|default_if_none:'—' }}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      {% if supplier %}
+        <div class="portal-reveal portal-card p-5" style="--delay: 180ms">
+          <p class="portal-card-title">Registro</p>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Creado por</dt>
+              <dd class="font-semibold">{{ supplier.created_by.username|default:"—" }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Creado</dt>
+              <dd class="font-semibold tabular-nums"><time datetime="{{ supplier.created_at|date:'c' }}">{{ supplier.created_at|date:"j M Y, H:i" }}</time></dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Última edición</dt>
+              <dd class="font-semibold tabular-nums"><time datetime="{{ supplier.updated_at|date:'c' }}">{{ supplier.updated_at|date:"j M Y, H:i" }}</time></dd>
+            </div>
+          </dl>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}

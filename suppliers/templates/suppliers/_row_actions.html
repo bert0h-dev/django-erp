@@ -1,0 +1,11 @@
+<div class="inline-flex items-center gap-1">
+  <a href="{% url 'suppliers:supplier_edit' supplier.pk %}" class="portal-icon-action" aria-label="Editar {{ supplier }}" title="Editar">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+  </a>
+  <form action="{% url 'suppliers:supplier_delete' supplier.pk %}" method="post" data-confirm="{{ supplier }}">
+    {% csrf_token %}
+    <button type="submit" class="portal-icon-action portal-icon-action--danger" aria-label="Eliminar {{ supplier }}" title="Eliminar">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </button>
+  </form>
+</div>

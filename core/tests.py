@@ -17,7 +17,7 @@ class DashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['permissions']['materials'], 1)
-        self.assertEqual(response.context['permissions']['sales'], 0)
+        self.assertNotIn('sales', response.context['permissions'])
         self.assertEqual(response.context['roles'], ['Almacén'])
         self.assertContains(response, reverse('materials:materials_list'))
 

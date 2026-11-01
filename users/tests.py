@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Role, User, UserRole
-from .permissions import MODULES, get_module_permission, get_user_permissions, get_user_roles
+from .permissions import get_module_permission, get_user_permissions, get_user_roles
 
 
 class PermissionsTests(TestCase):
@@ -15,7 +15,7 @@ class PermissionsTests(TestCase):
         return role
 
     def test_user_without_roles_has_no_access(self):
-        self.assertEqual(get_user_permissions(self.user), dict.fromkeys(MODULES, 0))
+        self.assertEqual(get_user_permissions(self.user), {})
         self.assertEqual(get_module_permission(self.user, 'materials'), 0)
         self.assertEqual(get_user_roles(self.user), [])
 
@@ -27,7 +27,7 @@ class PermissionsTests(TestCase):
 
         self.assertEqual(permissions['materials'], 2)
         self.assertEqual(permissions['sales'], 2)
-        self.assertEqual(permissions['customers'], 0)
+        self.assertNotIn('customers', permissions)
         self.assertEqual(get_module_permission(self.user, 'materials'), 2)
         self.assertCountEqual(get_user_roles(self.user), ['Lectura', 'Escritura'])
 

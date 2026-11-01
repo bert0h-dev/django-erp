@@ -628,13 +628,6 @@ a.portal-nav-link:hover {
   box-shadow: var(--shadow);
 }
 
-/* Tarjeta destacada con el azul de la marca */
-.portal-card--brand {
-  border-color: transparent;
-  background: linear-gradient(140deg, var(--ink) 0%, var(--primary) 100%);
-  color: #fff;
-}
-
 /* Panel interior de una tarjeta, con fondo teñido */
 .portal-panel {
   display: flex;
@@ -789,12 +782,6 @@ a.portal-row:hover .portal-row__arrow {
 }
 
 .portal-meter--secondary > span { background: var(--secondary); }
-
-.portal-meter--on-brand {
-  background: rgb(255 255 255 / 0.2);
-}
-
-.portal-meter--on-brand > span { background: var(--accent); }
 
 @keyframes portal-grow {
   from { transform: scaleX(0); }

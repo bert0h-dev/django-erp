@@ -19,8 +19,8 @@ MODULE_CATALOG = [
         'key': 'suppliers',
         'name': 'Proveedores',
         'description': 'Datos fiscales, contacto y condiciones de pago de cada proveedor.',
-        'url_name': None,
-        'status': 'building',
+        'url_name': 'suppliers:suppliers_list',
+        'status': 'live',
         'icon': '<path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /><circle cx="7.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" /><circle cx="17.5" cy="18.5" r="2" stroke="currentColor" stroke-width="1.7" />',
     },
     {
@@ -79,5 +79,5 @@ def get_user_modules(permissions):
     return [
         {**module, 'level': permissions[module['key']]}
         for module in MODULE_CATALOG
-        if permissions[module['key']] > 0
+        if module['key'] in permissions
     ]

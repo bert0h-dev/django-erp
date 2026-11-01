@@ -39,6 +39,7 @@ class Suppliers(models.Model):
     class Meta:
         verbose_name = "Supplier"
         verbose_name_plural = "Suppliers"
+        ordering = ['-created_at', '-id']
 
     def __str__(self):
         return self.name

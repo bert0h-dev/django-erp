@@ -94,16 +94,16 @@
     });
   }
 
-  // Vista previa en vivo y contador de caracteres del formulario de materiales
-  const materialForm = document.querySelector('[data-material-form]');
+  // Vista previa en vivo y contador de caracteres de los formularios con data-preview-form
+  const previewForm = document.querySelector('[data-preview-form]');
 
-  if (materialForm) {
+  if (previewForm) {
     const statusLabels = {
       Active: '<span class="portal-status portal-status--active">Activo</span>',
       Inactive: '<span class="portal-status portal-status--inactive">Inactivo</span>',
     };
 
-    materialForm.querySelectorAll('[data-preview-source]').forEach((field) => {
+    previewForm.querySelectorAll('[data-preview-source]').forEach((field) => {
       const key = field.dataset.previewSource;
       const target = document.querySelector(`[data-preview="${key}"]`);
       if (!target) {
@@ -122,8 +122,8 @@
       field.addEventListener(field.type === 'radio' ? 'change' : 'input', update);
     });
 
-    const description = materialForm.querySelector('textarea[maxlength]');
-    const counter = materialForm.querySelector('[data-char-count]');
+    const description = previewForm.querySelector('textarea[maxlength]');
+    const counter = previewForm.querySelector('[data-char-count]');
     if (description && counter) {
       description.addEventListener('input', () => {
         counter.textContent = `${description.value.length}/${description.maxLength}`;
