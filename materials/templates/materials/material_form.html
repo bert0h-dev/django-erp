@@ -3,23 +3,21 @@
 {% block title %}{% if material %}Editar material{% else %}Crear material{% endif %}{% endblock %}
 
 {% block content %}
-  <section>
-    <a href="{% url 'materials:materials_list' %}" class="portal-reveal portal-sticker tone-card transition hover:-rotate-2" style="--delay: 0ms">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
-      Volver a materiales
-    </a>
-    <p class="portal-reveal portal-eyebrow mt-8" style="--delay: 40ms">Catálogo</p>
-    <h1 class="portal-reveal portal-display mt-4 text-6xl sm:text-7xl" style="--delay: 80ms">
-      {% if material %}Editar <span class="portal-marker">{{ material }}</span>{% else %}Nuevo <span class="portal-marker">material</span>{% endif %}
-    </h1>
-    <p class="portal-reveal portal-muted mt-4 text-lg" style="--delay: 120ms">
+  <section class="portal-reveal" style="--delay: 0ms">
+    <nav aria-label="Ruta" class="portal-crumbs">
+      <a href="{% url 'materials:materials_list' %}">Materiales</a>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span aria-current="page">{% if material %}Editar{% else %}Nuevo{% endif %}</span>
+    </nav>
+    <h1 class="portal-display mt-2 text-3xl">{% if material %}Editar {{ material }}{% else %}Nuevo material{% endif %}</h1>
+    <p class="portal-muted mt-1 text-sm">
       {% if material %}Actualiza la información del material.{% else %}Completa la información y mira cómo queda su etiqueta.{% endif %}
     </p>
   </section>
 
-  <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
+  <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_23rem]">
     <!-- Formulario -->
-    <form method="post" class="portal-reveal portal-card p-6 sm:p-8" style="--delay: 160ms" data-loading-form data-material-form novalidate>
+    <form method="post" class="portal-reveal portal-card p-5 sm:p-7" style="--delay: 60ms" data-loading-form data-material-form novalidate>
       {% csrf_token %}
 
       {% for error in form.non_field_errors %}
@@ -27,7 +25,7 @@
       {% endfor %}
 
       <fieldset>
-        <legend class="portal-sticker tone-lime">1 · Identificación</legend>
+        <legend class="portal-step"><span>1</span>Identificación</legend>
         <div class="mt-5 grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
           <div>
             <label for="{{ form.id_material.id_for_label }}" class="portal-label">ID de material</label>
@@ -55,9 +53,9 @@
         </div>
       </fieldset>
 
-      <fieldset class="mt-9 border-t-2 border-dashed border-[var(--ink)] pt-8">
+      <fieldset class="portal-divider mt-8 pt-7">
         <legend class="sr-only">Clasificación</legend>
-        <p class="portal-sticker tone-lilac" aria-hidden="true">2 · Clasificación</p>
+        <p class="portal-step" aria-hidden="true"><span>2</span>Clasificación</p>
         <div class="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
             <label for="{{ form.unit.id_for_label }}" class="portal-label">Unidad de medida</label>
@@ -98,7 +96,7 @@
         </div>
       </fieldset>
 
-      <div class="mt-9 flex flex-col-reverse gap-3 border-t-2 border-dashed border-[var(--ink)] pt-6 sm:flex-row sm:justify-end">
+      <div class="portal-divider mt-8 flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:justify-end">
         <a href="{% url 'materials:materials_list' %}" class="portal-button-secondary">Cancelar</a>
         <button type="submit" data-loading-label="{% if material %}Guardando...{% else %}Creando...{% endif %}" class="portal-button">
           <span data-submit-label>{% if material %}Guardar cambios{% else %}Crear material{% endif %}</span>
@@ -108,53 +106,50 @@
     </form>
 
     <!-- Etiqueta de almacén (vista previa en vivo) y registro -->
-    <aside class="space-y-8 lg:sticky lg:top-28 lg:self-start" aria-label="Vista previa">
-      <div class="portal-reveal" style="--delay: 240ms">
-        <p class="portal-eyebrow mb-4">Así se verá su etiqueta</p>
-        <div class="portal-ticket">
-          <span class="portal-ticket__hole" aria-hidden="true"></span>
-          <div class="px-6 pb-5 pt-12">
-            <div class="flex items-start justify-between gap-3">
-              <span class="portal-code !bg-[var(--card)] text-sm" data-preview="id" data-empty="SIN-ID">{{ form.id_material.value|default:'SIN-ID' }}</span>
-              <span data-preview="status">
-                {% if form.status.value == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--active">Activo</span>{% endif %}
-              </span>
+    <aside class="space-y-5 lg:sticky lg:top-5 lg:self-start" aria-label="Vista previa">
+      <div class="portal-reveal portal-card p-5" style="--delay: 120ms">
+        <div class="flex items-center justify-between gap-3">
+          <p class="portal-card-title">Etiqueta de almacén</p>
+          <span data-preview="status">
+            {% if form.status.value == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--active">Activo</span>{% endif %}
+          </span>
+        </div>
+        <p class="portal-subtle mt-1 text-xs">Se actualiza mientras escribes.</p>
+
+        <div class="portal-slot mt-5" aria-hidden="true"></div>
+        <div class="portal-receipt">
+          <span class="portal-code" data-preview="id" data-empty="SIN-ID">{{ form.id_material.value|default:'SIN-ID' }}</span>
+          <p class="mt-3 break-words text-xl font-bold leading-tight" data-preview="name" data-empty="Material sin nombre">{{ form.name.value|default:'Material sin nombre' }}</p>
+          <p class="portal-muted mt-1 break-words text-sm leading-6" data-preview="description" data-empty="Sin descripción">{{ form.description.value|default:'Sin descripción' }}</p>
+          <dl class="portal-receipt__rows">
+            <div>
+              <dt>Unidad</dt>
+              <dd data-preview="unit" data-empty="—">{{ form.unit.value|default:'—' }}</dd>
             </div>
-            <p class="portal-display mt-5 break-words text-3xl" data-preview="name" data-empty="Material sin nombre">{{ form.name.value|default:'Material sin nombre' }}</p>
-            <p class="mt-2 break-words text-sm font-medium leading-6" data-preview="description" data-empty="Sin descripción">{{ form.description.value|default:'Sin descripción' }}</p>
-          </div>
-          <div class="portal-ticket__tear"></div>
-          <div class="px-6 pb-6 pt-5">
-            <dl class="grid grid-cols-2 gap-3 font-mono text-sm">
-              <div>
-                <dt class="text-[0.68rem] font-semibold uppercase tracking-[0.1em]">Unidad</dt>
-                <dd class="mt-1 truncate font-bold" data-preview="unit" data-empty="—">{{ form.unit.value|default:'—' }}</dd>
-              </div>
-              <div>
-                <dt class="text-[0.68rem] font-semibold uppercase tracking-[0.1em]">Tipo</dt>
-                <dd class="mt-1 truncate font-bold" data-preview="type" data-empty="—">{{ form.material_type.value|default:'—' }}</dd>
-              </div>
-            </dl>
-            <div class="portal-barcode mt-5" aria-hidden="true"></div>
-          </div>
+            <div>
+              <dt>Tipo</dt>
+              <dd data-preview="type" data-empty="—">{{ form.material_type.value|default:'—' }}</dd>
+            </div>
+          </dl>
+          <div class="portal-barcode mt-4" aria-hidden="true"></div>
         </div>
       </div>
 
       {% if material %}
-        <div class="portal-reveal portal-card tone-card p-6" style="--delay: 300ms">
-          <p class="portal-eyebrow">Registro</p>
+        <div class="portal-reveal portal-card p-5" style="--delay: 180ms">
+          <p class="portal-card-title">Registro</p>
           <dl class="mt-4 space-y-3 text-sm">
             <div class="flex justify-between gap-4">
               <dt class="portal-muted">Creado por</dt>
-              <dd class="font-bold">{{ material.created_by.username|default:"—" }}</dd>
+              <dd class="font-semibold">{{ material.created_by.username|default:"—" }}</dd>
             </div>
             <div class="flex justify-between gap-4">
               <dt class="portal-muted">Creado</dt>
-              <dd class="font-mono font-bold"><time datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:"j M Y, H:i" }}</time></dd>
+              <dd class="font-semibold tabular-nums"><time datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:"j M Y, H:i" }}</time></dd>
             </div>
             <div class="flex justify-between gap-4">
               <dt class="portal-muted">Última edición</dt>
-              <dd class="font-mono font-bold"><time datetime="{{ material.updated_at|date:'c' }}">{{ material.updated_at|date:"j M Y, H:i" }}</time></dd>
+              <dd class="font-semibold tabular-nums"><time datetime="{{ material.updated_at|date:'c' }}">{{ material.updated_at|date:"j M Y, H:i" }}</time></dd>
             </div>
           </dl>
         </div>

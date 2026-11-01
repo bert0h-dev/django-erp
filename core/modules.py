@@ -3,14 +3,12 @@
 - `key` debe coincidir con el campo del módulo en `users.models.Role`.
 - `url_name` es None mientras el módulo no tenga pantallas.
 - `status`: 'live' (disponible), 'building' (en construcción) o 'soon' (próximamente).
-- `color` es el tono del módulo: usa la clase `tone-<color>` de core/static/css/portal.css.
 - `icon` es el contenido interno de un <svg viewBox="0 0 24 24">.
 """
 
 MODULE_CATALOG = [
     {
         'key': 'materials',
-        'color': 'lime',
         'name': 'Materiales',
         'description': 'Catálogo de materiales, unidades y tipos, con exportación a CSV.',
         'url_name': 'materials:materials_list',
@@ -19,7 +17,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'suppliers',
-        'color': 'lilac',
         'name': 'Proveedores',
         'description': 'Datos fiscales, contacto y condiciones de pago de cada proveedor.',
         'url_name': None,
@@ -28,7 +25,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'customers',
-        'color': 'sky',
         'name': 'Clientes',
         'description': 'Cartera de clientes y sus datos de contacto.',
         'url_name': None,
@@ -37,7 +33,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'purchases',
-        'color': 'pink',
         'name': 'Compras',
         'description': 'Órdenes de compra a proveedores y su seguimiento.',
         'url_name': None,
@@ -46,7 +41,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'sales',
-        'color': 'tangerine',
         'name': 'Ventas',
         'description': 'Pedidos y ventas a clientes.',
         'url_name': None,
@@ -55,7 +49,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'inventory',
-        'color': 'sun',
         'name': 'Inventario',
         'description': 'Existencias y movimientos de almacén.',
         'url_name': None,
@@ -64,7 +57,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'accounting',
-        'color': 'mint',
         'name': 'Contabilidad',
         'description': 'Registro contable de las operaciones.',
         'url_name': None,
@@ -73,7 +65,6 @@ MODULE_CATALOG = [
     },
     {
         'key': 'reporting',
-        'color': 'coral',
         'name': 'Reportes',
         'description': 'Indicadores y reportes del negocio.',
         'url_name': None,
