@@ -782,6 +782,8 @@ a.portal-row:hover .portal-row__arrow {
 }
 
 .portal-meter--secondary > span { background: var(--secondary); }
+.portal-meter--success > span { background: var(--success); }
+.portal-meter--danger > span { background: var(--danger); }
 
 @keyframes portal-grow {
   from { transform: scaleX(0); }
@@ -1403,4 +1405,99 @@ a.portal-page-link:hover {
       var(--ink) 8px 11px, transparent 11px 12px,
       var(--ink) 12px 13px, transparent 13px 16px);
   opacity: 0.85;
+}
+
+/* ---------- Carga masiva ---------- */
+
+/* Zona para soltar el archivo: el input cubre toda la zona, así que clic y arrastrar funcionan sin JS */
+.portal-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 2.75rem 1.5rem;
+  text-align: center;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.portal-dropzone input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.portal-dropzone:hover,
+.portal-dropzone.is-dragover {
+  border-color: var(--secondary);
+  background: var(--tint);
+}
+
+.portal-dropzone:focus-within {
+  outline: 3px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+.portal-dropzone.has-file {
+  border-style: solid;
+  border-color: var(--primary);
+  background: var(--card);
+}
+
+.portal-dropzone.is-invalid {
+  border-color: var(--danger);
+  background: #fff7f7;
+}
+
+.portal-dropzone .portal-tile {
+  transition: transform 200ms ease;
+}
+
+.portal-dropzone.is-dragover .portal-tile {
+  transform: translateY(-4px);
+}
+
+.portal-bulk-error {
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.portal-bulk-error .portal-code {
+  margin-right: 0.3rem;
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.portal-details > summary {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 700;
+  list-style: none;
+}
+
+.portal-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.portal-details > summary::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: '';
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+
+.portal-details[open] > summary::before {
+  transform: rotate(45deg);
 }

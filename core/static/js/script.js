@@ -131,6 +131,27 @@
     }
   }
 
+  // Zona de carga de archivos: muestra el archivo elegido y resalta al arrastrar
+  document.querySelectorAll('[data-dropzone]').forEach((dropzone) => {
+    const input = dropzone.querySelector('input[type="file"]');
+    const label = dropzone.querySelector('[data-dropzone-label]');
+    const hint = dropzone.querySelector('[data-dropzone-hint]');
+
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      dropzone.classList.toggle('has-file', Boolean(file));
+      dropzone.classList.remove('is-invalid');
+      label.textContent = file ? file.name : label.dataset.empty;
+      hint.textContent = file ? `${(file.size / 1024).toFixed(1)} KB · haz clic para cambiarlo` : hint.dataset.empty;
+    });
+    ['dragenter', 'dragover'].forEach((type) => {
+      input.addEventListener(type, () => dropzone.classList.add('is-dragover'));
+    });
+    ['dragleave', 'drop'].forEach((type) => {
+      input.addEventListener(type, () => dropzone.classList.remove('is-dragover'));
+    });
+  });
+
   // Estado de carga en formularios con data-loading-form
   document.querySelectorAll('form[data-loading-form]').forEach((form) => {
     form.addEventListener('submit', (event) => {

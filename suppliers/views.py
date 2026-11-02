@@ -1,11 +1,15 @@
+import csv
+import io
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Suppliers
-from .forms import SupplierForm
-from django.core.paginator import Paginator
 from django.http import HttpResponse
-import csv
+from django.core.paginator import Paginator
+from django.db import IntegrityError, transaction
+
+from .models import Suppliers
+from .forms import SupplierForm, CsvUploadForm
 from users.permissions import get_module_permission
 
 def get_supplier_values(field):
@@ -168,3 +172,122 @@ def supplier_delete(request, pk):
     return redirect('suppliers:suppliers_list')
 
   return redirect('suppliers:suppliers_list')
+
+@login_required
+def supplier_bulk_create(request):
+  max_permission = get_module_permission(request.user, 'suppliers')
+
+  if max_permission < 2:
+      return redirect('suppliers:suppliers_list')
+
+  if request.method == 'POST':
+    form = CsvUploadForm(request.POST, request.FILES)
+    if form.is_valid():
+      csv_file = form.cleaned_data['csv_file']
+      try:
+        data_set = csv_file.read().decode('UTF-8')
+      except UnicodeDecodeError:
+        try:
+          csv_file.seek(0)
+          data_set = csv_file.read().decode('ISO-8859-1')
+        except Exception as e:
+          return render(request, 'suppliers/supplier_bulk_upload.html', {'form': form, 'error_message': f'Error al leer el archivo CSV: {str(e)}'})
+
+      io_string = io.StringIO(data_set)
+      reader = csv.DictReader(io_string)
+
+      if reader.fieldnames:
+        if reader.fieldnames[0].startswith('\ufeff'):
+          reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+
+        cleaned_fieldnames = [key.strip().lower() for key in reader.fieldnames]
+        reader.fieldnames = cleaned_fieldnames
+
+      successful_records = []
+      error_records = []
+      suppliers_to_create = []
+      # Fila donde apareció cada id_supplier: la validación del formulario solo compara contra la base de datos
+      seen_ids = {}
+
+      for i, row in enumerate(reader):
+        row_number = i + 2
+        form_data = {}
+
+        for key, value in row.items():
+          cleaned_value = value.strip() if isinstance(value, str) else value
+          form_data[key] = cleaned_value
+
+        supplier_form = SupplierForm(form_data)
+
+        if supplier_form.is_valid():
+          id_supplier = supplier_form.cleaned_data['id_supplier']
+          if id_supplier in seen_ids:
+            error_records.append({
+              'row': row_number,
+              'data': form_data,
+              'errors': {'id_supplier': f'Está repetido en el archivo (ya aparece en la fila {seen_ids[id_supplier]}).'},
+            })
+            continue
+
+          seen_ids[id_supplier] = row_number
+          supplier = supplier_form.save(commit=False)
+          supplier.created_by = request.user
+          suppliers_to_create.append(supplier)
+          successful_records.append({'row': row_number, 'data': form_data})
+        else:
+          errors = {
+            field: ', '.join(err)
+            for field, err in supplier_form.errors.items()
+          }
+          error_records.append({'row': row_number, 'data': form_data, 'errors': errors})
+
+      if suppliers_to_create:
+        try:
+          with transaction.atomic():
+            Suppliers.objects.bulk_create(suppliers_to_create)
+        except IntegrityError:
+          # Otro usuario registró alguno de estos ID mientras se procesaba el archivo
+          return render(request, 'suppliers/supplier_bulk_upload.html', {
+            'form': form,
+            'error_message': 'Algunos ID de proveedor ya existen. No se registró ningún proveedor; vuelve a subir el archivo.',
+          })
+
+      if successful_records:
+        count = len(successful_records)
+        messages.success(request, 'Se registró 1 proveedor.' if count == 1 else f'Se registraron {count} proveedores.')
+      if error_records:
+        count = len(error_records)
+        messages.warning(request, '1 fila tiene errores y no se registró.' if count == 1 else f'{count} filas tienen errores y no se registraron.')
+
+      context = {
+        'form': form,
+        'successful_count': len(successful_records),
+        'error_count': len(error_records),
+        'total_rows': len(successful_records) + len(error_records),
+        'error_records': error_records,
+        'successful_records': successful_records,
+        'report_generated': True,
+      }
+
+      return render(request, 'suppliers/supplier_bulk_upload.html', context)
+    
+    return render(request, 'suppliers/supplier_bulk_upload.html', {'form': form})
+  
+  else:
+    form = CsvUploadForm()
+    return render(request, 'suppliers/supplier_bulk_upload.html', {'form': form})
+
+@login_required
+def download_template_suppliers(request):
+  max_permission = get_module_permission(request.user, 'suppliers')
+
+  if max_permission < 2:
+    return redirect('suppliers:suppliers_list')
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = 'attachment; filename="supplier_template.csv"'
+
+  writer = csv.writer(response)
+  writer.writerow(['id_supplier', 'legal_name', 'name', 'tax_id', 'country', 'state_province', 'city', 'address', 'zip_code', 'phone', 'email', 'contact_name', 'contact_role', 'category', 'payment_terms', 'currency', 'payment_method', 'bank_account', 'status'])
+
+  return response

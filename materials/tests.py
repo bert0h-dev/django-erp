@@ -1,6 +1,7 @@
 import csv
 import io
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -161,3 +162,76 @@ class MaterialModelTests(TestCase):
         self.assertEqual(str(Material(name='Acero')), 'Acero')
         self.assertEqual(str(Material(name='', id_material='M-1')), 'M-1')
         self.assertEqual(str(Material(name='', pk=7)), 'Material 7')
+
+
+class MaterialBulkUploadTests(MaterialTestCase):
+    HEADERS = ['id_material', 'name', 'description', 'unit', 'material_type', 'status']
+
+    def setUp(self):
+        super().setUp()
+        self.set_level(2)
+        self.url = reverse('materials:material_bulk_create')
+
+    def row(self, code, **fields):
+        data = {'id_material': code, 'name': f'Material {code}', 'description': '', 'unit': 'kg', 'material_type': 'Metal', 'status': 'Active'}
+        data.update(fields)
+        return data
+
+    def csv_file(self, rows):
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=self.HEADERS)
+        writer.writeheader()
+        writer.writerows(rows)
+        return SimpleUploadedFile('materiales.csv', output.getvalue().encode('utf-8'), content_type='text/csv')
+
+    def test_read_only_is_redirected(self):
+        Role.objects.filter(role_name='Materiales 2').update(materials=1)
+        list_url = reverse('materials:materials_list')
+        self.assertRedirects(self.client.get(self.url), list_url)
+        self.assertRedirects(self.client.get(reverse('materials:download_template_materials')), list_url)
+
+    def test_upload_page_renders(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="csv_file"')
+        self.assertContains(response, reverse('materials:download_template_materials'))
+
+    def test_template_has_expected_headers(self):
+        response = self.client.get(reverse('materials:download_template_materials'))
+        self.assertEqual(response.content.decode().strip(), ','.join(self.HEADERS))
+
+    def test_upload_reports_created_and_failed_rows(self):
+        rows = [self.row('M-10'), self.row('M-11', unit='')]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Material.objects.get(id_material='M-10').created_by, self.user)
+        self.assertFalse(Material.objects.filter(id_material='M-11').exists())
+        self.assertContains(response, 'Filas con errores')
+        self.assertContains(response, 'Materiales registrados (1)')
+
+    def test_duplicate_id_in_file_is_reported_not_crashing(self):
+        rows = [self.row('M-20'), self.row('M-20', name='Otro')]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
+
+        self.assertEqual(Material.objects.filter(id_material='M-20').count(), 1)
+        self.assertContains(response, 'ya aparece en la fila 2')
+
+    def test_messages_reflect_result(self):
+        response = self.client.post(self.url, {'csv_file': self.csv_file([self.row('M-30'), self.row('M-31')])})
+
+        texts = [str(message) for message in response.context['messages']]
+        self.assertEqual(texts, ['Se registraron 2 materiales.'])
+
+    def test_upload_without_file_shows_error(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'aria-invalid="true"')
+
+    def test_unknown_status_is_rejected(self):
+        response = self.client.post(self.url, {'csv_file': self.csv_file([self.row('M-40', status='Pendiente')])})
+
+        self.assertFalse(Material.objects.filter(id_material='M-40').exists())
+        self.assertContains(response, 'no es un estado válido')

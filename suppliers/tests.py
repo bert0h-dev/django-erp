@@ -1,3 +1,7 @@
+import csv
+import io
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -126,3 +130,73 @@ class SupplierCrudTests(SupplierTestCase):
         self.assertContains(response, 'Del sur')
         self.assertNotContains(response, 'Del norte')
         self.assertContains(response, '<option value="México"')
+
+
+class SupplierBulkUploadTests(SupplierTestCase):
+    def setUp(self):
+        super().setUp()
+        self.set_level(2)
+        self.url = reverse('suppliers:supplier_bulk_create')
+
+    def csv_file(self, rows):
+        headers = list(self.supplier_data('X').keys())
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=headers)
+        writer.writeheader()
+        writer.writerows(rows)
+        return SimpleUploadedFile('proveedores.csv', output.getvalue().encode('utf-8'), content_type='text/csv')
+
+    def test_read_only_is_redirected(self):
+        Role.objects.filter(role_name='Proveedores 2').update(suppliers=1)
+        self.assertRedirects(self.client.get(self.url), reverse('suppliers:suppliers_list'))
+
+    def test_upload_page_renders(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="csv_file"')
+        self.assertContains(response, reverse('suppliers:download_template_suppliers'))
+
+    def test_upload_reports_created_and_failed_rows(self):
+        rows = [self.supplier_data('PR-10'), self.supplier_data('PR-11', email='no-es-correo')]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Suppliers.objects.filter(id_supplier='PR-10').exists())
+        self.assertFalse(Suppliers.objects.filter(id_supplier='PR-11').exists())
+        self.assertContains(response, 'Resultado de la carga')
+        self.assertContains(response, 'Filas con errores')
+        self.assertContains(response, 'Proveedores registrados (1)')
+
+    def test_upload_without_file_shows_error(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'aria-invalid="true"')
+
+    def test_duplicate_id_in_file_is_reported_not_crashing(self):
+        rows = [self.supplier_data('PR-20'), self.supplier_data('PR-20', name='Otro')]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Suppliers.objects.filter(id_supplier='PR-20').count(), 1)
+        self.assertEqual(response.context['error_count'], 1)
+        self.assertContains(response, 'ya aparece en la fila 2')
+
+    def test_messages_reflect_result(self):
+        rows = [self.supplier_data('PR-30', email='no-es-correo')]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
+
+        texts = [str(message) for message in response.context['messages']]
+        self.assertEqual(texts, ['1 fila tiene errores y no se registró.'])
+
+    def test_report_keeps_upload_form(self):
+        response = self.client.post(self.url, {'csv_file': self.csv_file([self.supplier_data('PR-40')])})
+        self.assertIn('csv_file', response.context['form'].fields)
+
+    def test_unknown_status_is_rejected(self):
+        response = self.client.post(self.url, {'csv_file': self.csv_file([self.supplier_data('PR-50', status='Pendiente')])})
+
+        self.assertFalse(Suppliers.objects.filter(id_supplier='PR-50').exists())
+        self.assertContains(response, 'no es un estado válido')
