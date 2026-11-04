@@ -91,7 +91,7 @@
         <select name="country" id="country" class="portal-field">
           <option value="" {% if not request.GET.country %}selected{% endif %}>Todos</option>
           {% for country in all_countries %}
-            <option value="{{ country }}" {% if request.GET.country == country %}selected{% endif %}>{{ country }}</option>
+            <option value="{{ country.abbreviation }}" {% if request.GET.country|upper == country.abbreviation %}selected{% endif %}>{{ country }}</option>
           {% endfor %}
         </select>
       </div>
@@ -99,8 +99,9 @@
         <label for="status" class="portal-label">Estado</label>
         <select name="status" id="status" class="portal-field">
           <option value="" {% if not request.GET.status %}selected{% endif %}>Todos</option>
-          <option value="Active" {% if request.GET.status == 'Active' %}selected{% endif %}>Activo</option>
-          <option value="Inactive" {% if request.GET.status == 'Inactive' %}selected{% endif %}>Inactivo</option>
+          {% for status in all_status %}
+            <option value="{{ status.name }}" {% if request.GET.status == status.name %}selected{% endif %}>{{ status.name }}</option>
+          {% endfor %}
         </select>
       </div>
       <div class="flex gap-2 sm:col-span-2 xl:col-span-1">
@@ -126,10 +127,10 @@
           <span class="portal-filter-chip">Nombre: {{ request.GET.name }}<a href="{% querystring name=None page=None %}" aria-label="Quitar filtro de nombre"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
         {% endif %}
         {% if request.GET.country %}
-          <span class="portal-filter-chip">País: {{ request.GET.country }}<a href="{% querystring country=None page=None %}" aria-label="Quitar filtro de país"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+          <span class="portal-filter-chip">País: {% for country in all_countries %}{% if request.GET.country|upper == country.abbreviation %}{{ country }}{% endif %}{% empty %}{{ request.GET.country }}{% endfor %}<a href="{% querystring country=None page=None %}" aria-label="Quitar filtro de país"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
         {% endif %}
         {% if request.GET.status %}
-          <span class="portal-filter-chip">Estado: {% if request.GET.status == 'Active' %}Activo{% elif request.GET.status == 'Inactive' %}Inactivo{% else %}{{ request.GET.status }}{% endif %}<a href="{% querystring status=None page=None %}" aria-label="Quitar filtro de estado"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+          <span class="portal-filter-chip">Estado: {{ request.GET.status }}<a href="{% querystring status=None page=None %}" aria-label="Quitar filtro de estado"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
         {% endif %}
       </div>
     {% endif %}

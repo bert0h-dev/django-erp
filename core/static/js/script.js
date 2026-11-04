@@ -98,9 +98,12 @@
   const previewForm = document.querySelector('[data-preview-form]');
 
   if (previewForm) {
-    const statusLabels = {
-      Active: '<span class="portal-status portal-status--active">Activo</span>',
-      Inactive: '<span class="portal-status portal-status--inactive">Inactivo</span>',
+    // Igual que core/_status_badge.html: el color sale de data-active (is_active del catálogo)
+    const statusBadge = (label, active) => {
+      const badge = document.createElement('span');
+      badge.className = `portal-status portal-status--${active ? 'active' : 'inactive'}`;
+      badge.textContent = label;
+      return badge;
     };
 
     previewForm.querySelectorAll('[data-preview-source]').forEach((field) => {
@@ -110,16 +113,29 @@
         return;
       }
 
+      const isSelect = field.tagName === 'SELECT';
+
       const update = () => {
         if (key === 'status') {
-          if (field.checked) {
-            target.innerHTML = statusLabels[field.value] || '';
+          // La opción elegida del select (o el radio marcado) trae data-active y su nombre como texto
+          if (!isSelect && !field.checked) {
+            return;
           }
+          const source = isSelect ? field.selectedOptions[0] : field;
+          const label = (source.dataset.label || source.textContent).trim();
+          target.replaceChildren(...(field.value ? [statusBadge(label, source.dataset.active === 'true')] : []));
           return;
         }
-        target.textContent = field.value.trim() || target.dataset.empty;
+        // En un <select> se muestra el texto de la opción elegida, no su value (que suele ser el id)
+        const text = isSelect
+          ? (field.value ? field.selectedOptions[0].textContent : '')
+          : field.value;
+        target.textContent = text.trim() || target.dataset.empty;
       };
-      field.addEventListener(field.type === 'radio' ? 'change' : 'input', update);
+      field.addEventListener(field.type === 'radio' || isSelect ? 'change' : 'input', update);
+      if (isSelect) {
+        update();
+      }
     });
 
     const description = previewForm.querySelector('textarea[maxlength]');

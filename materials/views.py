@@ -1,22 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Material
+
+from core.bulk import catalog_lookup, process_bulk_upload, status_lookup
+from core.models import Status
+from .models import Material, MaterialType, Unit
 from .forms import MaterialForm, CsvUploadForm
 from django.core.paginator import Paginator
-from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 import csv
-import io
 from users.permissions import get_module_permission
 
-def get_material_types():
-  return (
-    Material.objects.exclude(material_type='')
-    .order_by('material_type')
-    .values_list('material_type', flat=True)
-    .distinct()
-  )
+def get_catalogs():
+  """Opciones de los catálogos que usan los formularios, filtros e instrucciones de materiales."""
+  return {
+    'all_units': Unit.objects.order_by('name'),
+    'all_material_types': MaterialType.objects.order_by('name'),
+    'all_status': Status.objects.order_by('name'),
+  }
 
 @login_required
 def materials_list(request):
@@ -25,7 +26,7 @@ def materials_list(request):
   if max_permission == 0:
     return redirect('dashboard')
 
-  materials_list = Material.objects.all()
+  materials_list = Material.objects.select_related('created_by', 'unit', 'material_type', 'status')
 
   id_material = request.GET.get('id_material')
   name = request.GET.get('name')
@@ -37,9 +38,17 @@ def materials_list(request):
   if name:
     materials_list = materials_list.filter(name__icontains=name)
   if material_type:
-    materials_list = materials_list.filter(material_type=material_type)
-  if status is not None and status != '':
-    materials_list = materials_list.filter(status=status)
+    try:
+      material_type_obj = MaterialType.objects.get(name__iexact=material_type)
+      materials_list = materials_list.filter(material_type=material_type_obj)
+    except MaterialType.DoesNotExist:
+      materials_list = materials_list.none()
+  if status:
+    try:
+      status_obj = Status.objects.get(name__iexact=status)
+      materials_list = materials_list.filter(status=status_obj)
+    except Status.DoesNotExist:
+      materials_list = materials_list.none()
 
   if request.GET.get('export') == "csv":
     response = HttpResponse(content_type='text/csv')
@@ -69,17 +78,18 @@ def materials_list(request):
   page_number = request.GET.get('page')
   page_obj = paginator.get_page(page_number)
 
+  # Se obtiene el total de materiales para el resumen
   all_materials = Material.objects.all()
 
   context = {
     'page_obj': page_obj,
-    'all_material_types': get_material_types(),
+    **get_catalogs(),
     'has_filters': any([id_material, name, material_type, status]),
     'summary': {
       'total': all_materials.count(),
-      'active': all_materials.filter(status='Active').count(),
-      'inactive': all_materials.filter(status='Inactive').count(),
-      'types': get_material_types().count(),
+      'active': all_materials.filter(status__is_active=True).count(),
+      'inactive': all_materials.filter(status__is_active=False).count(),
+      'types': MaterialType.objects.count(),
     },
   }
 
@@ -104,11 +114,11 @@ def material_create(request):
       messages.success(request, 'El material se creó correctamente.')
       return redirect('materials:materials_list')
   else:
-    form = MaterialForm(initial={'status': 'Active'})
+    form = MaterialForm()
 
   context = {
     'form': form,
-    'material_types': get_material_types(),
+    **get_catalogs(),
   }
 
   return render(request, 'materials/material_form.html', context)
@@ -132,11 +142,11 @@ def material_edit(request,pk):
       return redirect('materials:materials_list')
   else:
     form = MaterialForm(instance=material)
-    
+
   context = {
     'form': form,
     'material': material,
-    'material_types': get_material_types(),
+    **get_catalogs(),
   }
 
   return render(request, 'materials/material_form.html', context)
@@ -164,101 +174,30 @@ def material_bulk_create(request):
   if max_permission < 2:
     return redirect('materials:materials_list')
 
+  context = {}
+
   if request.method == 'POST':
     form = CsvUploadForm(request.POST, request.FILES)
     if form.is_valid():
-      csv_file = form.cleaned_data['csv_file']
-      try:
-        data_set = csv_file.read().decode('UTF-8')
-      except UnicodeDecodeError:
-        try:
-          csv_file.seek(0)
-          data_set = csv_file.read().decode('ISO-8859-1')
-        except Exception as e:
-          return render(request, 'materials/material_bulk_upload.html', {'form': form, 'error_message': f'Error al leer el archivo CSV: {str(e)}'})
+      context = process_bulk_upload(
+        request,
+        form.cleaned_data['csv_file'],
+        form_class=MaterialForm,
+        model=Material,
+        id_field='id_material',
+        # La unidad se puede escribir por nombre, símbolo o como la exporta el listado ("Kilogramos", "kg" o "Kilogramos (kg)")
+        catalogs={
+          'unit': catalog_lookup(Unit.objects.all(), 'name', 'symbol', str),
+          'material_type': catalog_lookup(MaterialType.objects.all(), 'name'),
+          'status': status_lookup(),
+        },
+        nouns=('material', 'materiales'),
+      )
+  else:
+    form = CsvUploadForm()
 
-      io_string = io.StringIO(data_set)
-      reader = csv.DictReader(io_string)
-
-      if reader.fieldnames:
-        if reader.fieldnames[0].startswith('\ufeff'):
-          reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
-
-        cleaned_fieldnames = [key.strip().lower() for key in reader.fieldnames]
-        reader.fieldnames = cleaned_fieldnames
-
-      successful_records = []
-      error_records = []
-      materials_to_create = []
-      # Fila donde apareció cada id_material: la validación del formulario solo compara contra la base de datos
-      seen_ids = {}
-
-      for i, row in enumerate(reader):
-        row_number = i + 2
-        form_data = {}
-
-        for key, value in row.items():
-          cleaned_value = value.strip() if isinstance(value, str) else value
-          form_data[key] = cleaned_value
-
-        material_form = MaterialForm(form_data)
-
-        if material_form.is_valid():
-          id_material = material_form.cleaned_data['id_material']
-          if id_material in seen_ids:
-            error_records.append({
-              'row': row_number,
-              'data': form_data,
-              'errors': {'id_material': f'Está repetido en el archivo (ya aparece en la fila {seen_ids[id_material]}).'},
-            })
-            continue
-
-          seen_ids[id_material] = row_number
-          material = material_form.save(commit=False)
-          material.created_by = request.user
-          materials_to_create.append(material)
-          successful_records.append({'row': row_number, 'data': form_data})
-        else:
-          errors = {
-            field: ', '.join(err)
-            for field, err in material_form.errors.items()
-          }
-          error_records.append({'row': row_number, 'data': form_data, 'errors': errors})
-
-      if materials_to_create:
-        try:
-          with transaction.atomic():
-            Material.objects.bulk_create(materials_to_create)
-        except IntegrityError:
-          # Otro usuario registró alguno de estos ID mientras se procesaba el archivo
-          return render(request, 'materials/material_bulk_upload.html', {
-            'form': form,
-            'error_message': 'Algunos ID de material ya existen. No se registró ningún material; vuelve a subir el archivo.',
-          })
-
-      if successful_records:
-        count = len(successful_records)
-        messages.success(request, 'Se registró 1 material.' if count == 1 else f'Se registraron {count} materiales.')
-      if error_records:
-        count = len(error_records)
-        messages.warning(request, '1 fila tiene errores y no se registró.' if count == 1 else f'{count} filas tienen errores y no se registraron.')
-
-      context = {
-        'form': form,
-        'successful_count': len(successful_records),
-        'error_count': len(error_records),
-        'total_rows': len(successful_records) + len(error_records),
-        'error_records': error_records,
-        'successful_records': successful_records,
-        'report_generated': True,
-      }
-
-      return render(request, 'materials/material_bulk_upload.html', context)
-
-    return render(request, 'materials/material_bulk_upload.html', {'form': form, 'material_types': get_material_types()})
-
-  form = CsvUploadForm()
-  return render(request, 'materials/material_bulk_upload.html', {'form': form, 'material_types': get_material_types()})
+  context.update({'form': form, **get_catalogs()})
+  return render(request, 'materials/material_bulk_upload.html', context)
 
 @login_required
 def download_template_materials(request):

@@ -5,14 +5,23 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
+from core.models import Status
 from users.models import Role, User, UserRole
-from .models import Material
+from .models import Material, MaterialType, Unit
 
 
 class MaterialTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user('ana', password='Clave-segura-123')
         self.client.force_login(self.user)
+        self.kg = Unit.objects.create(name='Kilogramos', symbol='kg')
+        self.metal = MaterialType.objects.create(name='Metal')
+        # Los crea la migración core.0002_default_statuses
+        self.active = Status.objects.get(name='Activo')
+        self.inactive = Status.objects.get(name='Inactivo')
+
+    def material_type(self, name):
+        return MaterialType.objects.get_or_create(name=name)[0]
 
     def set_level(self, level):
         role = Role.objects.create(role_name=f'Materiales {level}', materials=level)
@@ -22,11 +31,13 @@ class MaterialTestCase(TestCase):
         data = {
             'id_material': code,
             'name': f'Material {code}',
-            'unit': 'kg',
-            'material_type': 'Metal',
-            'status': 'Active',
+            'unit': self.kg,
+            'material_type': self.metal,
+            'status': self.active,
         }
         data.update(fields)
+        if isinstance(data['material_type'], str):
+            data['material_type'] = self.material_type(data['material_type'])
         return Material.objects.create(**data)
 
 
@@ -76,14 +87,22 @@ class MaterialCrudTests(MaterialTestCase):
             'id_material': 'M-100',
             'name': 'Acero',
             'description': '',
-            'unit': 'kg',
-            'material_type': 'Metal',
-            'status': 'Active',
+            'unit': self.kg.pk,
+            'material_type': self.metal.pk,
+            'status': self.active.pk,
         })
 
         self.assertRedirects(response, reverse('materials:materials_list'))
         material = Material.objects.get(id_material='M-100')
         self.assertEqual(material.created_by, self.user)
+        self.assertEqual((material.unit, material.material_type, material.status), (self.kg, self.metal, self.active))
+
+    def test_create_form_starts_without_unit_and_type(self):
+        form = self.client.get(reverse('materials:material_create')).context['form']
+
+        self.assertIsNone(form.initial['unit'])
+        self.assertIsNone(form.initial['material_type'])
+        self.assertEqual(form.initial['status'], self.active.pk)
 
     def test_edit_updates_material(self):
         material = self.create_material('M-1')
@@ -92,15 +111,15 @@ class MaterialCrudTests(MaterialTestCase):
             'id_material': 'M-1',
             'name': 'Nombre nuevo',
             'description': '',
-            'unit': 'kg',
-            'material_type': 'Metal',
-            'status': 'Inactive',
+            'unit': self.kg.pk,
+            'material_type': self.metal.pk,
+            'status': self.inactive.pk,
         })
 
         self.assertRedirects(response, reverse('materials:materials_list'))
         material.refresh_from_db()
         self.assertEqual(material.name, 'Nombre nuevo')
-        self.assertEqual(material.status, 'Inactive')
+        self.assertEqual(material.status, self.inactive)
 
     def test_delete_requires_post(self):
         material = self.create_material('M-1')
@@ -126,8 +145,20 @@ class MaterialListTests(MaterialTestCase):
 
         response = self.client.get(self.url, {'material_type': 'A & B'})
 
-        self.assertEqual(list(response.context['all_material_types']), ['A & B', 'A & B extra', 'Metal'])
+        self.assertEqual([t.name for t in response.context['all_material_types']], ['A & B', 'A & B extra', 'Metal'])
         self.assertEqual([m.id_material for m in response.context['page_obj']], ['M-1'])
+        self.assertContains(response, '<option value="A &amp; B" selected>')
+
+    def test_status_filter_and_summary_use_catalog(self):
+        self.create_material('M-1')
+        self.create_material('M-2', status=self.inactive)
+
+        response = self.client.get(self.url, {'status': 'Inactivo'})
+
+        self.assertEqual([m.id_material for m in response.context['page_obj']], ['M-2'])
+        self.assertEqual(response.context['summary']['active'], 1)
+        self.assertEqual(response.context['summary']['inactive'], 1)
+        self.assertContains(response, '<span class="portal-status portal-status--inactive">Inactivo</span>')
 
     def test_pagination_is_ordered_and_keeps_encoded_filters(self):
         for i in range(25):
@@ -173,7 +204,7 @@ class MaterialBulkUploadTests(MaterialTestCase):
         self.url = reverse('materials:material_bulk_create')
 
     def row(self, code, **fields):
-        data = {'id_material': code, 'name': f'Material {code}', 'description': '', 'unit': 'kg', 'material_type': 'Metal', 'status': 'Active'}
+        data = {'id_material': code, 'name': f'Material {code}', 'description': '', 'unit': 'kg', 'material_type': 'Metal', 'status': 'Activo'}
         data.update(fields)
         return data
 
@@ -230,8 +261,41 @@ class MaterialBulkUploadTests(MaterialTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'aria-invalid="true"')
 
-    def test_unknown_status_is_rejected(self):
-        response = self.client.post(self.url, {'csv_file': self.csv_file([self.row('M-40', status='Pendiente')])})
+    def test_unknown_catalog_values_are_rejected(self):
+        rows = [self.row('M-40', status='Pendiente', unit='toneladas', material_type='Madera')]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
 
         self.assertFalse(Material.objects.filter(id_material='M-40').exists())
-        self.assertContains(response, 'no es un estado válido')
+        errors = response.context['error_records'][0]['errors']
+        self.assertEqual(errors['status'], '«Pendiente» no existe en el catálogo.')
+        self.assertEqual(errors['unit'], '«toneladas» no existe en el catálogo.')
+        self.assertEqual(errors['material_type'], '«Madera» no existe en el catálogo.')
+
+    def test_catalog_text_is_resolved_by_name_or_symbol(self):
+        rows = [
+            self.row('M-50', unit='KILOGRAMOS', material_type='metal', status='inactivo'),
+            self.row('M-51', unit='kg', status='Active'),
+            self.row('M-52', unit='Kilogramos (kg)'),  # como la pone la exportación
+        ]
+
+        response = self.client.post(self.url, {'csv_file': self.csv_file(rows)})
+
+        first = Material.objects.get(id_material='M-50')
+        self.assertEqual((first.unit, first.material_type, first.status), (self.kg, self.metal, self.inactive))
+        self.assertEqual(Material.objects.get(id_material='M-51').status, self.active)
+        self.assertEqual(Material.objects.get(id_material='M-52').unit, self.kg)
+        # El reporte muestra el registro del catálogo, no el texto del CSV
+        self.assertContains(response, 'Kilogramos (kg)')
+
+    def test_excel_csv_with_bom_and_latin1_is_read(self):
+        content = '\ufeffid_material,name,description,unit,material_type,status\r\nM-60,Ñandú,,kg,Metal,Activo\r\n'
+        for encoding in ('utf-8', 'iso-8859-1'):
+            with self.subTest(encoding=encoding):
+                Material.objects.filter(id_material='M-60').delete()
+                data = content.encode(encoding) if encoding == 'utf-8' else content.lstrip('\ufeff').encode(encoding)
+                upload = SimpleUploadedFile('materiales.csv', data, content_type='text/csv')
+
+                self.client.post(self.url, {'csv_file': upload})
+
+                self.assertEqual(Material.objects.get(id_material='M-60').name, 'Ñandú')

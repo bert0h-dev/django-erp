@@ -59,40 +59,37 @@
         <div class="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
             <label for="{{ form.unit.id_for_label }}" class="portal-label">Unidad de medida</label>
-            <input type="text" name="{{ form.unit.html_name }}" id="{{ form.unit.id_for_label }}" value="{{ form.unit.value|default:'' }}" placeholder="kg, L, pza…" maxlength="50" required list="unit-options" autocomplete="off" class="portal-field" data-preview-source="unit" {% if form.unit.errors %}aria-invalid="true" aria-describedby="id_unit_errors"{% endif %} />
-            <datalist id="unit-options">
-              <option value="kg"></option>
-              <option value="g"></option>
-              <option value="L"></option>
-              <option value="ml"></option>
-              <option value="m"></option>
-              <option value="m²"></option>
-              <option value="pza"></option>
-              <option value="caja"></option>
-            </datalist>
+            <select name="{{ form.unit.html_name }}" id="{{ form.unit.id_for_label }}" required class="portal-field" data-preview-source="unit" {% if form.unit.errors %}aria-invalid="true" aria-describedby="id_unit_errors"{% endif %}>
+              <option value="">Elige una unidad</option>
+              {% for unit in all_units %}
+                <option value="{{ unit.pk }}" {% if unit.pk|stringformat:"s" == form.unit.value|stringformat:"s" %}selected{% endif %}>{{ unit }}</option>
+              {% endfor %}
+            </select>
             {% if form.unit.errors %}<div id="id_unit_errors" class="portal-field-error">{% for error in form.unit.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
           </div>
 
           <div>
-            <label for="{{ form.material_type.id_for_label }}" class="portal-label">Tipo de material</label>
-            <input type="text" name="{{ form.material_type.html_name }}" id="{{ form.material_type.id_for_label }}" value="{{ form.material_type.value|default:'' }}" placeholder="Escribe o elige uno" maxlength="50" required list="type-options" autocomplete="off" class="portal-field" data-preview-source="type" {% if form.material_type.errors %}aria-invalid="true" aria-describedby="id_material_type_errors"{% endif %} />
-            <datalist id="type-options">
-              {% for material_type in material_types %}<option value="{{ material_type }}"></option>{% endfor %}
-            </datalist>
-            <p class="portal-hint">Usa un tipo existente para que el filtro de la lista los agrupe.</p>
-            {% if form.material_type.errors %}<div id="id_material_type_errors" class="portal-field-error">{% for error in form.material_type.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+              <label for="{{ form.material_type.id_for_label }}" class="portal-label">Tipo de material</label>
+              <select name="{{ form.material_type.html_name }}" id="{{ form.material_type.id_for_label }}" required class="portal-field" data-preview-source="material_type" {% if form.material_type.errors %}aria-invalid="true" aria-describedby="id_material_type_errors"{% endif %}>
+                <option value="">Elige un tipo</option>
+                {% for material_type in all_material_types %}
+                  <option value="{{ material_type.pk }}" {% if material_type.pk|stringformat:"s" == form.material_type.value|stringformat:"s" %}selected{% endif %}>{{ material_type }}</option>
+                {% endfor %}
+              </select>
+              {% if form.material_type.errors %}<div id="id_material_type_errors" class="portal-field-error">{% for error in form.material_type.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
           </div>
         </div>
 
-        <div class="mt-6">
-          <p id="status-label" class="portal-label">Estado</p>
-          <div class="portal-segmented" role="radiogroup" aria-labelledby="status-label">
-            <input type="radio" name="{{ form.status.html_name }}" id="status-active" value="Active" {% if form.status.value == 'Active' %}checked{% endif %} data-preview-source="status" />
-            <label for="status-active">Activo</label>
-            <input type="radio" name="{{ form.status.html_name }}" id="status-inactive" value="Inactive" {% if form.status.value == 'Inactive' %}checked{% endif %} data-preview-source="status" />
-            <label for="status-inactive">Inactivo</label>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="{{ form.status.id_for_label }}" class="portal-label">Estado</label>
+            <select name="{{ form.status.html_name }}" id="{{ form.status.id_for_label }}" required class="portal-field" data-preview-source="status" {% if form.status.errors %}aria-invalid="true" aria-describedby="id_status_errors"{% endif %}>
+            {% for status in all_status %}
+              <option value="{{ status.pk }}" data-active="{{ status.is_active|yesno:'true,false' }}" {% if status.pk|stringformat:"s" == form.status.value|stringformat:"s" %}selected{% endif %}>{{ status.name }}</option>
+            {% endfor %}
+            </select>
+            {% if form.status.errors %}<div id="id_status_errors" class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
           </div>
-          {% if form.status.errors %}<div class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
         </div>
       </fieldset>
 
@@ -111,7 +108,7 @@
         <div class="flex items-center justify-between gap-3">
           <p class="portal-card-title">Etiqueta de almacén</p>
           <span data-preview="status">
-            {% if form.status.value == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--active">Activo</span>{% endif %}
+            {% for status in all_status %}{% if status.pk|stringformat:"s" == form.status.value|stringformat:"s" %}{% include 'core/_status_badge.html' %}{% endif %}{% endfor %}
           </span>
         </div>
         <p class="portal-subtle mt-1 text-xs">Se actualiza mientras escribes.</p>
@@ -124,11 +121,11 @@
           <dl class="portal-receipt__rows">
             <div>
               <dt>Unidad</dt>
-              <dd data-preview="unit" data-empty="—">{{ form.unit.value|default:'—' }}</dd>
+              <dd data-preview="unit" data-empty="—">{% for unit in all_units %}{% if unit.pk|stringformat:"s" == form.unit.value|stringformat:"s" %}{{ unit }}{% endif %}{% endfor %}</dd>
             </div>
             <div>
               <dt>Tipo</dt>
-              <dd data-preview="type" data-empty="—">{{ form.material_type.value|default:'—' }}</dd>
+              <dd data-preview="material_type" data-empty="—">{% for material_type in all_material_types %}{% if material_type.pk|stringformat:"s" == form.material_type.value|stringformat:"s" %}{{ material_type }}{% endif %}{% endfor %}</dd>
             </div>
           </dl>
           <div class="portal-barcode mt-4" aria-hidden="true"></div>

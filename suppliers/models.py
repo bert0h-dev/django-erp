@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from core.models import Country, Status
 
 class Suppliers(models.Model):
     id_supplier = models.CharField(
@@ -11,7 +12,7 @@ class Suppliers(models.Model):
     legal_name = models.CharField(max_length=150, blank=True, verbose_name="Legal Name")
     name = models.CharField(max_length=100, verbose_name="Name")
     tax_id = models.CharField(max_length=30, verbose_name="Tax ID")
-    country = models.CharField(max_length=60, verbose_name="Country")
+    country = models.ForeignKey(Country, on_delete=models.PROTECT, verbose_name="Country")
     state_province = models.CharField(max_length=60, verbose_name="State/Province")
     city = models.CharField(max_length=100, verbose_name="City")
     address = models.CharField(max_length=150, verbose_name="Address")
@@ -26,7 +27,7 @@ class Suppliers(models.Model):
     payment_method = models.CharField(max_length=150, verbose_name="Payment method")
     bank_account = models.CharField(max_length=150, verbose_name="Bank Account")
     
-    status = models.CharField(max_length=50, verbose_name="Status")
+    status = models.ForeignKey(Status, default=1, on_delete=models.PROTECT, verbose_name="Status")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

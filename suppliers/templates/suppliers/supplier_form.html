@@ -46,15 +46,19 @@
         <legend class="sr-only">Ubicación</legend>
         <p class="portal-step" aria-hidden="true"><span>2</span>Ubicación</p>
         <div class="mt-5 grid gap-5 sm:grid-cols-3">
-          {% include 'suppliers/_field.html' with field=form.country label='País' placeholder='México' autocomplete='country-name' list='country-options' preview='country' %}
+          <div>
+            <label for="{{ form.country.id_for_label }}" class="portal-label">País</label>
+            <select name="{{ form.country.html_name }}" id="{{ form.country.id_for_label }}" required class="portal-field" data-preview-source="country" {% if form.country.errors %}aria-invalid="true" aria-describedby="id_country_errors"{% endif %}>
+              <option value="">Elige un país</option>
+              {% for country in all_countries %}
+                <option value="{{ country.pk }}" {% if country.pk|stringformat:"s" == form.country.value|stringformat:"s" %}selected{% endif %}>{{ country }}</option>
+              {% endfor %}
+            </select>
+            {% if form.country.errors %}<div id="id_country_errors" class="portal-field-error">{% for error in form.country.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
           {% include 'suppliers/_field.html' with field=form.state_province label='Estado o provincia' placeholder='Nuevo León' autocomplete='address-level1' %}
           {% include 'suppliers/_field.html' with field=form.city label='Ciudad' placeholder='Monterrey' autocomplete='address-level2' preview='city' %}
         </div>
-        <datalist id="country-options">
-          <option value="México"></option>
-          <option value="Estados Unidos"></option>
-          <option value="Canadá"></option>
-        </datalist>
         <div class="mt-5 grid gap-5 sm:grid-cols-[minmax(0,1fr)_10rem]">
           {% include 'suppliers/_field.html' with field=form.address label='Dirección' placeholder='Calle, número y colonia' autocomplete='street-address' %}
           {% include 'suppliers/_field.html' with field=form.zip_code label='Código postal' placeholder='64000' inputmode='numeric' autocomplete='postal-code' mono=True %}
@@ -102,15 +106,14 @@
           {% include 'suppliers/_field.html' with field=form.bank_account label='Cuenta bancaria (CLABE)' placeholder='18 dígitos' autocomplete='off' mono=True %}
         </div>
 
-        <div class="mt-6">
-          <p id="status-label" class="portal-label">Estado</p>
-          <div class="portal-segmented" role="radiogroup" aria-labelledby="status-label">
-            <input type="radio" name="{{ form.status.html_name }}" id="status-active" value="Active" {% if form.status.value == 'Active' %}checked{% endif %} data-preview-source="status" />
-            <label for="status-active">Activo</label>
-            <input type="radio" name="{{ form.status.html_name }}" id="status-inactive" value="Inactive" {% if form.status.value == 'Inactive' %}checked{% endif %} data-preview-source="status" />
-            <label for="status-inactive">Inactivo</label>
-          </div>
-          {% if form.status.errors %}<div class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+        <div class="mt-6 sm:max-w-xs">
+          <label for="{{ form.status.id_for_label }}" class="portal-label">Estado</label>
+          <select name="{{ form.status.html_name }}" id="{{ form.status.id_for_label }}" required class="portal-field" data-preview-source="status" {% if form.status.errors %}aria-invalid="true" aria-describedby="id_status_errors"{% endif %}>
+            {% for status in all_status %}
+              <option value="{{ status.pk }}" data-active="{{ status.is_active|yesno:'true,false' }}" {% if status.pk|stringformat:"s" == form.status.value|stringformat:"s" %}selected{% endif %}>{{ status.name }}</option>
+            {% endfor %}
+          </select>
+          {% if form.status.errors %}<div id="id_status_errors" class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
         </div>
       </fieldset>
 
@@ -129,7 +132,7 @@
         <div class="flex items-center justify-between gap-3">
           <p class="portal-card-title">Ficha del proveedor</p>
           <span data-preview="status">
-            {% if form.status.value == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--active">Activo</span>{% endif %}
+            {% for status in all_status %}{% if status.pk|stringformat:"s" == form.status.value|stringformat:"s" %}{% include 'core/_status_badge.html' %}{% endif %}{% endfor %}
           </span>
         </div>
         <p class="portal-subtle mt-1 text-xs">Se actualiza mientras escribes.</p>
@@ -154,7 +157,7 @@
             </div>
             <div>
               <dt>País</dt>
-              <dd data-preview="country" data-empty="—">{{ form.country.value|default:'—' }}</dd>
+              <dd data-preview="country" data-empty="—">{% for country in all_countries %}{% if country.pk|stringformat:"s" == form.country.value|stringformat:"s" %}{{ country }}{% endif %}{% endfor %}</dd>
             </div>
           </dl>
           <dl class="portal-receipt__rows">

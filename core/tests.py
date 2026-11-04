@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from users.models import Role, User, UserRole
+from .models import Country, Currency
 
 
 class DashboardTests(TestCase):
@@ -30,3 +31,16 @@ class DashboardTests(TestCase):
     def test_menu_logout_uses_post_form(self):
         response = self.client.get(reverse('dashboard'))
         self.assertContains(response, f'<form action="{reverse("logout")}" method="post">')
+
+
+class CatalogTests(TestCase):
+    """Catálogos que precargan las migraciones de core."""
+
+    def test_countries_are_loaded_with_iso_codes(self):
+        self.assertEqual(Country.objects.count(), 249)
+        self.assertEqual(Country.objects.get(abbreviation='MX').name, 'México')
+        self.assertEqual(str(Country.objects.get(abbreviation='US')), 'Estados Unidos (US)')
+
+    def test_currencies_are_loaded_and_distinguished_by_code(self):
+        self.assertEqual(Currency.objects.filter(symbol='$').count(), 6)
+        self.assertEqual(str(Currency.objects.get(code='MXN')), 'Peso mexicano (MXN)')

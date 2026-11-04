@@ -99,6 +99,7 @@
                   <th scope="col">Proveedor</th>
                   <th scope="col">Ubicación</th>
                   <th scope="col">Contacto</th>
+                  <th scope="col">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,8 +111,9 @@
                       <p class="truncate font-semibold">{{ record.data.name }}</p>
                       <p class="portal-subtle truncate text-xs">{{ record.data.legal_name|default:"Sin razón social" }}</p>
                     </td>
-                    <td class="whitespace-nowrap">{{ record.data.city }}, {{ record.data.country }}</td>
+                    <td class="whitespace-nowrap">{{ record.data.city }}, {{ record.catalog.country }}</td>
                     <td class="max-w-[14rem]"><p class="truncate">{{ record.data.contact_name }}</p><p class="portal-subtle truncate text-xs">{{ record.data.email }}</p></td>
+                    <td>{% include 'core/_status_badge.html' with status=record.catalog.status %}</td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -172,9 +174,18 @@
           <ul class="mt-3 space-y-2 text-sm leading-6">
             <li>Una fila por proveedor. Todas las columnas son obligatorias excepto <span class="portal-code">legal_name</span>.</li>
             <li><span class="portal-code">id_supplier</span> no se puede repetir.</li>
-            <li><span class="portal-code">status</span> debe ser <span class="portal-code">Active</span> o <span class="portal-code">Inactive</span>.</li>
+            <li><span class="portal-code">status</span> debe ser un estado del catálogo: {% for status in all_status %}<span class="portal-code">{{ status.name }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}.</li>
             <li><span class="portal-code">zip_code</span> y <span class="portal-code">phone</span> van solo con números.</li>
+            <li><span class="portal-code">country</span> va con el nombre del país, su abreviación o ambos, como en la exportación: <span class="portal-code">México</span>, <span class="portal-code">MX</span> o <span class="portal-code">México (MX)</span>. No importan mayúsculas ni minúsculas.</li>
+            <li>Puedes copiar los valores de un archivo de <strong>Exportar CSV</strong>, pero los encabezados deben ser los de la plantilla.</li>
           </ul>
+
+          <details class="portal-details mt-4">
+            <summary>Países ({{ all_countries|length }})</summary>
+            <ul class="portal-country-list mt-2">
+              {% for country in all_countries %}<li><span class="portal-code">{{ country.abbreviation }}</span> {{ country.name }}</li>{% empty %}<li class="portal-subtle text-xs">El catálogo está vacío.</li>{% endfor %}
+            </ul>
+          </details>
           <p class="portal-subtle mt-3 text-xs leading-5">Las filas con errores no se registran; al terminar verás cuáles fueron y por qué.</p>
         </div>
       </aside>

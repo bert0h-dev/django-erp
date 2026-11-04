@@ -1,13 +1,13 @@
 import csv
-import io
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
 from django.core.paginator import Paginator
-from django.db import IntegrityError, transaction
 
+from core.bulk import catalog_lookup, process_bulk_upload, status_lookup
+from core.models import Country, Status
 from .models import Suppliers
 from .forms import SupplierForm, CsvUploadForm
 from users.permissions import get_module_permission
@@ -21,6 +21,10 @@ def get_supplier_values(field):
     .distinct()
   )
 
+def get_supplier_countries():
+  """Países del catálogo que tienen al menos un proveedor (para el resumen)."""
+  return Country.objects.filter(suppliers__isnull=False).distinct().order_by('name')
+
 @login_required
 def suppliers_list(request):
   max_permission = get_module_permission(request.user, 'suppliers')
@@ -28,7 +32,7 @@ def suppliers_list(request):
   if max_permission == 0:
     return redirect('dashboard')
 
-  suppliers_list = Suppliers.objects.select_related('created_by')
+  suppliers_list = Suppliers.objects.select_related('created_by', 'status', 'country')
 
   id_supplier = request.GET.get('id_supplier')
   name = request.GET.get('name')
@@ -40,9 +44,9 @@ def suppliers_list(request):
   if name:
     suppliers_list = suppliers_list.filter(name__icontains=name)
   if country:
-    suppliers_list = suppliers_list.filter(country=country)
+    suppliers_list = suppliers_list.filter(country__abbreviation__iexact=country)
   if status is not None and status != '':
-    suppliers_list = suppliers_list.filter(status=status)
+    suppliers_list = suppliers_list.filter(status__name__iexact=status)
 
   if request.GET.get('export') == "csv":
     response = HttpResponse(content_type='text/csv')
@@ -89,13 +93,14 @@ def suppliers_list(request):
 
   context = {
     'page_obj': page_obj,
-    'all_countries': get_supplier_values('country'),
+    'all_countries': Country.objects.order_by('name'),
+    'all_status': Status.objects.order_by('name'),
     'has_filters': any([id_supplier, name, country, status]),
     'summary': {
       'total': all_suppliers.count(),
-      'active': all_suppliers.filter(status='Active').count(),
-      'inactive': all_suppliers.filter(status='Inactive').count(),
-      'countries': get_supplier_values('country').count(),
+      'active': all_suppliers.filter(status__is_active=True).count(),
+      'inactive': all_suppliers.filter(status__is_active=False).count(),
+      'countries': get_supplier_countries().count(),
     },
   }
 
@@ -120,11 +125,13 @@ def supplier_create(request):
       messages.success(request, 'El proveedor se creó correctamente.')
       return redirect('suppliers:suppliers_list')
   else:
-    form = SupplierForm(initial={'status': 'Active'})
+    form = SupplierForm()
 
   context = {
     'form': form,
     'categories': get_supplier_values('category'),
+    'all_status': Status.objects.order_by('name'),
+    'all_countries': Country.objects.order_by('name'),
   }
 
   return render(request, 'suppliers/supplier_form.html', context)
@@ -153,6 +160,8 @@ def supplier_edit(request,pk):
     'form': form,
     'supplier': supplier,
     'categories': get_supplier_values('category'),
+    'all_status': Status.objects.order_by('name'),
+    'all_countries': Country.objects.order_by('name'),
   }
 
   return render(request, 'suppliers/supplier_form.html', context)
@@ -178,104 +187,31 @@ def supplier_bulk_create(request):
   max_permission = get_module_permission(request.user, 'suppliers')
 
   if max_permission < 2:
-      return redirect('suppliers:suppliers_list')
+    return redirect('suppliers:suppliers_list')
+
+  context = {}
 
   if request.method == 'POST':
     form = CsvUploadForm(request.POST, request.FILES)
     if form.is_valid():
-      csv_file = form.cleaned_data['csv_file']
-      try:
-        data_set = csv_file.read().decode('UTF-8')
-      except UnicodeDecodeError:
-        try:
-          csv_file.seek(0)
-          data_set = csv_file.read().decode('ISO-8859-1')
-        except Exception as e:
-          return render(request, 'suppliers/supplier_bulk_upload.html', {'form': form, 'error_message': f'Error al leer el archivo CSV: {str(e)}'})
-
-      io_string = io.StringIO(data_set)
-      reader = csv.DictReader(io_string)
-
-      if reader.fieldnames:
-        if reader.fieldnames[0].startswith('\ufeff'):
-          reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
-
-        cleaned_fieldnames = [key.strip().lower() for key in reader.fieldnames]
-        reader.fieldnames = cleaned_fieldnames
-
-      successful_records = []
-      error_records = []
-      suppliers_to_create = []
-      # Fila donde apareció cada id_supplier: la validación del formulario solo compara contra la base de datos
-      seen_ids = {}
-
-      for i, row in enumerate(reader):
-        row_number = i + 2
-        form_data = {}
-
-        for key, value in row.items():
-          cleaned_value = value.strip() if isinstance(value, str) else value
-          form_data[key] = cleaned_value
-
-        supplier_form = SupplierForm(form_data)
-
-        if supplier_form.is_valid():
-          id_supplier = supplier_form.cleaned_data['id_supplier']
-          if id_supplier in seen_ids:
-            error_records.append({
-              'row': row_number,
-              'data': form_data,
-              'errors': {'id_supplier': f'Está repetido en el archivo (ya aparece en la fila {seen_ids[id_supplier]}).'},
-            })
-            continue
-
-          seen_ids[id_supplier] = row_number
-          supplier = supplier_form.save(commit=False)
-          supplier.created_by = request.user
-          suppliers_to_create.append(supplier)
-          successful_records.append({'row': row_number, 'data': form_data})
-        else:
-          errors = {
-            field: ', '.join(err)
-            for field, err in supplier_form.errors.items()
-          }
-          error_records.append({'row': row_number, 'data': form_data, 'errors': errors})
-
-      if suppliers_to_create:
-        try:
-          with transaction.atomic():
-            Suppliers.objects.bulk_create(suppliers_to_create)
-        except IntegrityError:
-          # Otro usuario registró alguno de estos ID mientras se procesaba el archivo
-          return render(request, 'suppliers/supplier_bulk_upload.html', {
-            'form': form,
-            'error_message': 'Algunos ID de proveedor ya existen. No se registró ningún proveedor; vuelve a subir el archivo.',
-          })
-
-      if successful_records:
-        count = len(successful_records)
-        messages.success(request, 'Se registró 1 proveedor.' if count == 1 else f'Se registraron {count} proveedores.')
-      if error_records:
-        count = len(error_records)
-        messages.warning(request, '1 fila tiene errores y no se registró.' if count == 1 else f'{count} filas tienen errores y no se registraron.')
-
-      context = {
-        'form': form,
-        'successful_count': len(successful_records),
-        'error_count': len(error_records),
-        'total_rows': len(successful_records) + len(error_records),
-        'error_records': error_records,
-        'successful_records': successful_records,
-        'report_generated': True,
-      }
-
-      return render(request, 'suppliers/supplier_bulk_upload.html', context)
-    
-    return render(request, 'suppliers/supplier_bulk_upload.html', {'form': form})
-  
+      context = process_bulk_upload(
+        request,
+        form.cleaned_data['csv_file'],
+        form_class=SupplierForm,
+        model=Suppliers,
+        id_field='id_supplier',
+        # El país se puede escribir por nombre, abreviación o como lo exporta el listado ("México", "MX" o "México (MX)")
+        catalogs={
+          'country': catalog_lookup(Country.objects.all(), 'name', 'abbreviation', str),
+          'status': status_lookup(),
+        },
+        nouns=('proveedor', 'proveedores'),
+      )
   else:
     form = CsvUploadForm()
-    return render(request, 'suppliers/supplier_bulk_upload.html', {'form': form})
+
+  context.update({'form': form, 'all_status': Status.objects.order_by('name'), 'all_countries': Country.objects.order_by('name')})
+  return render(request, 'suppliers/supplier_bulk_upload.html', context)
 
 @login_required
 def download_template_suppliers(request):

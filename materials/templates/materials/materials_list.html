@@ -91,7 +91,7 @@
         <select name="material_type" id="material_type" class="portal-field">
           <option value="" {% if not request.GET.material_type %}selected{% endif %}>Todos</option>
           {% for material_type in all_material_types %}
-            <option value="{{ material_type }}" {% if request.GET.material_type == material_type %}selected{% endif %}>{{ material_type }}</option>
+            <option value="{{ material_type.name }}" {% if request.GET.material_type == material_type.name %}selected{% endif %}>{{ material_type.name }}</option>
           {% endfor %}
         </select>
       </div>
@@ -99,8 +99,9 @@
         <label for="status" class="portal-label">Estado</label>
         <select name="status" id="status" class="portal-field">
           <option value="" {% if not request.GET.status %}selected{% endif %}>Todos</option>
-          <option value="Active" {% if request.GET.status == 'Active' %}selected{% endif %}>Activo</option>
-          <option value="Inactive" {% if request.GET.status == 'Inactive' %}selected{% endif %}>Inactivo</option>
+          {% for status in all_status %}
+            <option value="{{ status.name }}" {% if request.GET.status == status.name %}selected{% endif %}>{{ status.name }}</option>
+          {% endfor %}
         </select>
       </div>
       <div class="flex gap-2 sm:col-span-2 xl:col-span-1">
@@ -129,7 +130,7 @@
           <span class="portal-filter-chip">Tipo: {{ request.GET.material_type }}<a href="{% querystring material_type=None page=None %}" aria-label="Quitar filtro de tipo"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
         {% endif %}
         {% if request.GET.status %}
-          <span class="portal-filter-chip">Estado: {% if request.GET.status == 'Active' %}Activo{% elif request.GET.status == 'Inactive' %}Inactivo{% else %}{{ request.GET.status }}{% endif %}<a href="{% querystring status=None page=None %}" aria-label="Quitar filtro de estado"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
+          <span class="portal-filter-chip">Estado: {{ request.GET.status }}<a href="{% querystring status=None page=None %}" aria-label="Quitar filtro de estado"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></a></span>
         {% endif %}
       </div>
     {% endif %}
@@ -157,7 +158,7 @@
                   <p class="truncate font-semibold">{{ material.name|default:"Material sin nombre" }}</p>
                   <p class="portal-subtle truncate text-xs" title="{{ material.description }}">{{ material.description|default:"Sin descripción" }}</p>
                 </td>
-                <td class="whitespace-nowrap font-mono text-sm">{{ material.unit|default:"—" }}</td>
+                <td class="whitespace-nowrap">{{ material.unit|default:"—" }}</td>
                 <td class="whitespace-nowrap">{{ material.material_type|default:"—" }}</td>
                 <td>{% include 'materials/_status.html' %}</td>
                 <td class="whitespace-nowrap">

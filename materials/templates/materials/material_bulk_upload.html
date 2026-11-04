@@ -111,9 +111,9 @@
                       <p class="truncate font-semibold">{{ record.data.name|default:"Material sin nombre" }}</p>
                       <p class="portal-subtle truncate text-xs">{{ record.data.description|default:"Sin descripción" }}</p>
                     </td>
-                    <td class="whitespace-nowrap font-mono text-sm">{{ record.data.unit }}</td>
-                    <td class="whitespace-nowrap">{{ record.data.material_type }}</td>
-                    <td>{% if record.data.status == 'Active' %}<span class="portal-status portal-status--active">Activo</span>{% elif record.data.status == 'Inactive' %}<span class="portal-status portal-status--inactive">Inactivo</span>{% else %}<span class="portal-status portal-status--other">{{ record.data.status }}</span>{% endif %}</td>
+                    <td class="whitespace-nowrap">{{ record.catalog.unit }}</td>
+                    <td class="whitespace-nowrap">{{ record.catalog.material_type }}</td>
+                    <td>{% include 'core/_status_badge.html' with status=record.catalog.status %}</td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -174,15 +174,31 @@
           <ul class="mt-3 space-y-2 text-sm leading-6">
             <li>Una fila por material. <span class="portal-code">name</span> y <span class="portal-code">description</span> son opcionales; las demás columnas son obligatorias.</li>
             <li><span class="portal-code">id_material</span> no se puede repetir.</li>
-            <li><span class="portal-code">status</span> debe ser <span class="portal-code">Active</span> o <span class="portal-code">Inactive</span>.</li>
             <li><span class="portal-code">description</span> admite hasta 250 caracteres.</li>
+            <li><span class="portal-code">unit</span>, <span class="portal-code">material_type</span> y <span class="portal-code">status</span> deben existir en su catálogo. No importan mayúsculas ni minúsculas.</li>
+            <li><span class="portal-code">unit</span> va con el nombre, el símbolo o ambos, como en la exportación: <span class="portal-code">Kilogramos</span>, <span class="portal-code">kg</span> o <span class="portal-code">Kilogramos (kg)</span>.</li>
           </ul>
-          {% if material_types %}
-            <p class="portal-subtle mt-3 text-xs">Usa un tipo existente en <span class="portal-code">material_type</span> para que el filtro los agrupe:</p>
-            <div class="mt-2 flex flex-wrap gap-1.5">
-              {% for material_type in material_types %}<span class="portal-badge">{{ material_type }}</span>{% endfor %}
-            </div>
-          {% endif %}
+
+          <div class="mt-4 space-y-3">
+            <details class="portal-details">
+              <summary>Unidades ({{ all_units|length }}) <span class="portal-subtle font-normal">· por nombre, símbolo o ambos</span></summary>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                {% for unit in all_units %}<span class="portal-badge">{{ unit.name }} · {{ unit.symbol }}</span>{% empty %}<span class="portal-subtle text-xs">El catálogo está vacío.</span>{% endfor %}
+              </div>
+            </details>
+            <details class="portal-details">
+              <summary>Tipos de material ({{ all_material_types|length }})</summary>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                {% for material_type in all_material_types %}<span class="portal-badge">{{ material_type.name }}</span>{% empty %}<span class="portal-subtle text-xs">El catálogo está vacío.</span>{% endfor %}
+              </div>
+            </details>
+            <details class="portal-details">
+              <summary>Estados ({{ all_status|length }})</summary>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                {% for status in all_status %}{% include 'core/_status_badge.html' %}{% endfor %}
+              </div>
+            </details>
+          </div>
           <p class="portal-subtle mt-3 text-xs leading-5">Las filas con errores no se registran; al terminar verás cuáles fueron y por qué.</p>
         </div>
       </aside>

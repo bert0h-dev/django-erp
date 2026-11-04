@@ -1,5 +1,29 @@
 from django.db import models
 from django.conf import settings
+from core.models import Status
+
+class Unit(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name="Unit measure")
+    symbol = models.CharField(max_length=10, unique=True, verbose_name="Symbol")
+    
+    class Meta:
+        verbose_name = "Unit"
+        verbose_name_plural = "Units"
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.symbol})"
+
+class MaterialType(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name="Material type")
+    
+    class Meta:
+        verbose_name = "Material Type"
+        verbose_name_plural = "Material Types"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 class Material(models.Model):
     id_material = models.CharField(
@@ -14,10 +38,10 @@ class Material(models.Model):
         blank=True,
         verbose_name="Description",
     )
-    unit = models.CharField(max_length=50, verbose_name="Unit measure")
-    material_type = models.CharField(max_length=50, verbose_name="Material type")
-    status = models.CharField(max_length=50, verbose_name="Status")
-    
+    unit = models.ForeignKey(Unit, default=1, on_delete=models.PROTECT, verbose_name="Unit measure")
+    material_type = models.ForeignKey(MaterialType, default=1, on_delete=models.PROTECT, verbose_name="Material type")
+    status = models.ForeignKey(Status, default=1, on_delete=models.PROTECT, verbose_name="Status")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
