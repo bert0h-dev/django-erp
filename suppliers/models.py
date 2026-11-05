@@ -3,12 +3,7 @@ from django.conf import settings
 from core.models import Country, Status
 
 class Suppliers(models.Model):
-    id_supplier = models.CharField(
-        max_length=50,
-        null=True,
-        unique=True,
-        verbose_name="Supplier ID",
-    )
+    id_supplier = models.CharField(max_length=50, null=True, unique=True, verbose_name="Supplier ID")
     legal_name = models.CharField(max_length=150, blank=True, verbose_name="Legal Name")
     name = models.CharField(max_length=100, verbose_name="Name")
     tax_id = models.CharField(max_length=30, verbose_name="Tax ID")
@@ -29,13 +24,9 @@ class Suppliers(models.Model):
     
     status = models.ForeignKey(Status, default=1, on_delete=models.PROTECT, verbose_name="Status")
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Creado En")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Actualizado En")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='suppliers_created', verbose_name="Creado Por")
 
     class Meta:
         verbose_name = "Supplier"

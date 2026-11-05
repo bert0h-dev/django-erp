@@ -27,8 +27,8 @@ MODULE_CATALOG = [
         'key': 'customers',
         'name': 'Clientes',
         'description': 'Cartera de clientes y sus datos de contacto.',
-        'url_name': None,
-        'status': 'soon',
+        'url_name': 'customers:customers_list',
+        'status': 'live',
         'icon': '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m12-13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm2 5a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /><path d="M17 4a4 4 0 0 1 0 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />',
     },
     {

@@ -1,0 +1,201 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Carga masiva de clientes{% endblock %}
+
+{% block content %}
+  <section class="portal-reveal" style="--delay: 0ms">
+    <nav aria-label="Ruta" class="portal-crumbs">
+      <a href="{% url 'customers:customers_list' %}">Clientes</a>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span aria-current="page">Carga masiva</span>
+    </nav>
+    <h1 class="portal-display mt-2 text-3xl">Carga masiva de clientes</h1>
+    <p class="portal-muted mt-1 text-sm">Registra muchos clientes a la vez desde un archivo CSV.</p>
+  </section>
+
+  {% if report_generated %}
+    <!-- Resultado de la carga -->
+    <section class="portal-reveal portal-card mt-5 p-5" style="--delay: 60ms" aria-labelledby="report-heading">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="report-heading" class="portal-card-title">Resultado de la carga</h2>
+        <div class="flex flex-wrap gap-2">
+          <a href="{% url 'customers:customer_bulk_create' %}" class="portal-button-secondary portal-button--sm">Cargar otro archivo</a>
+          <a href="{% url 'customers:customers_list' %}" class="portal-button portal-button--sm">Ver clientes</a>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-2 sm:grid-cols-3">
+        <div class="portal-panel">
+          <p class="font-semibold">Filas procesadas</p>
+          <p class="portal-stat__value mt-4">{{ total_rows }}</p>
+        </div>
+        <div class="portal-panel">
+          <div class="flex items-center justify-between gap-2">
+            <p class="font-semibold">Registrados</p>
+            <span class="portal-muted text-sm tabular-nums">{% if total_rows %}{% widthratio successful_count total_rows 100 %}{% else %}0{% endif %}%</span>
+          </div>
+          <p class="portal-stat__value mt-4">{{ successful_count }}</p>
+          <div class="portal-meter portal-meter--success mt-3"><span style="width: {% if total_rows %}{% widthratio successful_count total_rows 100 %}{% else %}0{% endif %}%"></span></div>
+        </div>
+        <div class="portal-panel">
+          <div class="flex items-center justify-between gap-2">
+            <p class="font-semibold">Con errores</p>
+            <span class="portal-muted text-sm tabular-nums">{% if total_rows %}{% widthratio error_count total_rows 100 %}{% else %}0{% endif %}%</span>
+          </div>
+          <p class="portal-stat__value mt-4">{{ error_count }}</p>
+          <div class="portal-meter portal-meter--danger mt-3"><span style="width: {% if total_rows %}{% widthratio error_count total_rows 100 %}{% else %}0{% endif %}%"></span></div>
+        </div>
+      </div>
+
+      {% if not total_rows %}
+        <div class="portal-alert portal-alert--warning mt-5" role="status">El archivo no tenía filas de datos. Revisa que tenga los encabezados de la plantilla y al menos un cliente.</div>
+      {% elif not error_count %}
+        <div class="portal-alert portal-alert--success mt-5" role="status">Todas las filas se registraron sin errores.</div>
+      {% endif %}
+
+      {% if error_records %}
+        <!-- Filas con errores -->
+        <h3 class="mt-6 text-sm font-bold">Filas con errores <span class="portal-subtle font-normal">· no se registraron, corrígelas y vuelve a subirlas</span></h3>
+        <div class="portal-table-wrap mt-3">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th scope="col">Fila</th>
+                <th scope="col">ID</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Errores</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in error_records %}
+                <tr>
+                  <td class="whitespace-nowrap font-mono text-sm tabular-nums">{{ record.row }}</td>
+                  <td class="whitespace-nowrap"><span class="portal-code">{{ record.data.id_customer|default:"—" }}</span></td>
+                  <td class="max-w-[14rem]"><p class="truncate font-semibold">{{ record.data.name|default:"Sin nombre" }}</p></td>
+                  <td>
+                    <ul class="space-y-1">
+                      {% for field, message in record.errors.items %}
+                        <li class="portal-bulk-error"><span class="portal-code">{{ field }}</span> {{ message }}</li>
+                      {% endfor %}
+                    </ul>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+
+      {% if successful_records %}
+        <!-- Filas registradas -->
+        <details class="portal-details mt-6" {% if not error_records %}open{% endif %}>
+          <summary>Clientes registrados ({{ successful_count }})</summary>
+          <div class="portal-table-wrap mt-3">
+            <table class="portal-table">
+              <thead>
+                <tr>
+                  <th scope="col">Fila</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Ubicación</th>
+                  <th scope="col">Moneda</th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for record in successful_records %}
+                  <tr>
+                    <td class="whitespace-nowrap font-mono text-sm tabular-nums">{{ record.row }}</td>
+                    <td class="whitespace-nowrap"><span class="portal-code">{{ record.data.id_customer }}</span></td>
+                    <td class="max-w-[16rem]">
+                      <p class="truncate font-semibold">{{ record.data.name }}</p>
+                      <p class="portal-subtle truncate font-mono text-xs">{{ record.data.tax_id }}</p>
+                    </td>
+                    <td class="whitespace-nowrap">{% if record.data.city %}{{ record.data.city }}, {% endif %}{{ record.catalog.country }}</td>
+                    <td class="whitespace-nowrap">{{ record.catalog.currency }}</td>
+                    <td>{% include 'core/_status_badge.html' with status=record.catalog.status %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      {% endif %}
+    </section>
+  {% else %}
+    <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_23rem]">
+      <!-- Subida del archivo -->
+      <form method="post" enctype="multipart/form-data" class="portal-reveal portal-card p-5 sm:p-7" style="--delay: 60ms" data-loading-form novalidate>
+        {% csrf_token %}
+
+        {% if error_message %}
+          <div class="portal-alert portal-alert--error mb-5" role="alert">{{ error_message }}</div>
+        {% endif %}
+        {% for error in form.non_field_errors %}
+          <div class="portal-alert portal-alert--error mb-5" role="alert">{{ error }}</div>
+        {% endfor %}
+
+        <p class="portal-step"><span>3</span>Sube tu archivo</p>
+
+        <div class="portal-dropzone mt-5 {% if form.csv_file.errors %}is-invalid{% endif %}" data-dropzone>
+          <input type="file" name="csv_file" id="id_csv_file" accept=".csv,text/csv" required aria-describedby="csv-help{% if form.csv_file.errors %} csv-errors{% endif %}" {% if form.csv_file.errors %}aria-invalid="true"{% endif %} />
+          <span class="portal-tile portal-tile--lg" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </span>
+          <label for="id_csv_file" class="mt-4 font-semibold" data-dropzone-label data-empty="Arrastra tu archivo aquí o haz clic para elegirlo">Arrastra tu archivo aquí o haz clic para elegirlo</label>
+          <p id="csv-help" class="portal-subtle mt-1 text-xs" data-dropzone-hint data-empty="Solo archivos .csv, en UTF-8 o Latin-1">Solo archivos .csv, en UTF-8 o Latin-1</p>
+        </div>
+        {% if form.csv_file.errors %}
+          <div id="csv-errors" class="portal-field-error">{% for error in form.csv_file.errors %}<p>{{ error }}</p>{% endfor %}</div>
+        {% endif %}
+
+        <div class="portal-divider mt-7 flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:justify-end">
+          <a href="{% url 'customers:customers_list' %}" class="portal-button-secondary">Cancelar</a>
+          <button type="submit" data-loading-label="Procesando archivo..." class="portal-button">
+            <span data-submit-label>Cargar clientes</span>
+            <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Instrucciones -->
+      <aside class="order-first space-y-5 lg:order-last lg:sticky lg:top-5 lg:self-start" aria-label="Instrucciones">
+        <div class="portal-reveal portal-card p-5" style="--delay: 120ms">
+          <p class="portal-step"><span>1</span>Descarga la plantilla</p>
+          <p class="portal-muted mt-2 text-sm leading-6">Trae los encabezados en el orden correcto. No los cambies ni los traduzcas.</p>
+          <a href="{% url 'customers:download_template_customers' %}" class="portal-button-secondary mt-4 w-full">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4m-3 7v2h14v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            Descargar plantilla CSV
+          </a>
+        </div>
+
+        <div class="portal-reveal portal-card p-5" style="--delay: 180ms">
+          <p class="portal-step"><span>2</span>Llénala</p>
+          <ul class="mt-3 space-y-2 text-sm leading-6">
+            <li>Una fila por cliente. Son obligatorias <span class="portal-code">id_customer</span>, <span class="portal-code">name</span>, <span class="portal-code">tax_id</span>, <span class="portal-code">country</span>, <span class="portal-code">currency</span> y <span class="portal-code">status</span>; las demás puedes dejarlas vacías.</li>
+            <li><span class="portal-code">id_customer</span> no se puede repetir.</li>
+            <li><span class="portal-code">status</span> debe ser un estado del catálogo: {% for status in all_status %}<span class="portal-code">{{ status.name }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}.</li>
+            <li><span class="portal-code">country</span> va con el nombre del país, su abreviación o ambos: <span class="portal-code">México</span>, <span class="portal-code">MX</span> o <span class="portal-code">México (MX)</span>.</li>
+            <li><span class="portal-code">currency</span> va con el código o el nombre de la moneda: <span class="portal-code">MXN</span>, <span class="portal-code">Peso mexicano</span> o <span class="portal-code">Peso mexicano (MXN)</span>.</li>
+            <li>No importan mayúsculas ni minúsculas.</li>
+            <li>Puedes copiar los valores de un archivo de <strong>Exportar CSV</strong>, pero los encabezados deben ser los de la plantilla.</li>
+          </ul>
+
+          <details class="portal-details mt-4">
+            <summary>Países ({{ all_countries|length }})</summary>
+            <ul class="portal-country-list mt-2">
+              {% for country in all_countries %}<li><span class="portal-code">{{ country.abbreviation }}</span> {{ country.name }}</li>{% empty %}<li class="portal-subtle text-xs">El catálogo está vacío.</li>{% endfor %}
+            </ul>
+          </details>
+          <details class="portal-details mt-2">
+            <summary>Monedas ({{ all_currencies|length }})</summary>
+            <ul class="portal-country-list mt-2">
+              {% for currency in all_currencies %}<li><span class="portal-code">{{ currency.code }}</span> {{ currency.name }}</li>{% empty %}<li class="portal-subtle text-xs">El catálogo está vacío.</li>{% endfor %}
+            </ul>
+          </details>
+          <p class="portal-subtle mt-3 text-xs leading-5">Las filas con errores no se registran; al terminar verás cuáles fueron y por qué.</p>
+        </div>
+      </aside>
+    </div>
+  {% endif %}
+{% endblock %}

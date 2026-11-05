@@ -152,13 +152,13 @@ class SupplierCrudTests(SupplierTestCase):
         self.assertContains(response, '<option value="CL" selected>Chile (CL)</option>')
         self.assertContains(response, 'Nuevo León, Chile (CL)')
 
-    def test_csv_export_shows_country_with_abbreviation(self):
+    def test_csv_export_shows_country_abbreviation(self):
         self.create_supplier('PR-72', country=self.chile)
 
         response = self.client.get(reverse('suppliers:suppliers_list'), {'export': 'csv'})
 
         rows = list(csv.reader(io.StringIO(response.content.decode('utf-8-sig'))))
-        self.assertEqual(rows[1][rows[0].index('País')], 'Chile (CL)')
+        self.assertEqual(rows[1][rows[0].index('País')], 'CL')
 
     def test_create_saves_country_from_catalog(self):
         response = self.client.post(reverse('suppliers:supplier_create'), self.post_data('PR-70', country=self.chile.pk))

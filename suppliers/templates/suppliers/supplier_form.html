@@ -27,15 +27,15 @@
       <fieldset>
         <legend class="portal-step"><span>1</span>Identificación</legend>
         <div class="mt-5 grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
-          {% include 'suppliers/_field.html' with field=form.id_supplier label='ID de proveedor' placeholder='PR-001' autocomplete='off' preview='id' mono=True %}
-          {% include 'suppliers/_field.html' with field=form.name label='Nombre comercial' placeholder='Ej. Harinas del Norte' preview='name' %}
+          {% include 'core/_field.html' with field=form.id_supplier label='ID de proveedor' placeholder='PR-001' autocomplete='off' preview='id' mono=True %}
+          {% include 'core/_field.html' with field=form.name label='Nombre comercial' placeholder='Ej. Harinas del Norte' preview='name' %}
         </div>
         <div class="mt-5 grid gap-5 sm:grid-cols-2">
-          {% include 'suppliers/_field.html' with field=form.legal_name label='Razón social' placeholder='Ej. Harinas del Norte S.A. de C.V.' preview='legal' optional=True %}
-          {% include 'suppliers/_field.html' with field=form.tax_id label='ID fiscal (RFC)' placeholder='HNO010101ABC' autocomplete='off' preview='tax' mono=True %}
+          {% include 'core/_field.html' with field=form.legal_name label='Razón social' placeholder='Ej. Harinas del Norte S.A. de C.V.' preview='legal' optional=True %}
+          {% include 'core/_field.html' with field=form.tax_id label='ID fiscal (RFC)' placeholder='HNO010101ABC' autocomplete='off' preview='tax' mono=True %}
         </div>
         <div class="mt-5">
-          {% include 'suppliers/_field.html' with field=form.category label='Categoría' placeholder='Escribe o elige una' autocomplete='off' list='category-options' preview='category' %}
+          {% include 'core/_field.html' with field=form.category label='Categoría' placeholder='Escribe o elige una' autocomplete='off' list='category-options' preview='category' %}
           <datalist id="category-options">
             {% for category in categories %}<option value="{{ category }}"></option>{% endfor %}
           </datalist>
@@ -56,12 +56,12 @@
             </select>
             {% if form.country.errors %}<div id="id_country_errors" class="portal-field-error">{% for error in form.country.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
           </div>
-          {% include 'suppliers/_field.html' with field=form.state_province label='Estado o provincia' placeholder='Nuevo León' autocomplete='address-level1' %}
-          {% include 'suppliers/_field.html' with field=form.city label='Ciudad' placeholder='Monterrey' autocomplete='address-level2' preview='city' %}
+          {% include 'core/_field.html' with field=form.state_province label='Estado o provincia' placeholder='Nuevo León' autocomplete='address-level1' %}
+          {% include 'core/_field.html' with field=form.city label='Ciudad' placeholder='Monterrey' autocomplete='address-level2' preview='city' %}
         </div>
         <div class="mt-5 grid gap-5 sm:grid-cols-[minmax(0,1fr)_10rem]">
-          {% include 'suppliers/_field.html' with field=form.address label='Dirección' placeholder='Calle, número y colonia' autocomplete='street-address' %}
-          {% include 'suppliers/_field.html' with field=form.zip_code label='Código postal' placeholder='64000' inputmode='numeric' autocomplete='postal-code' mono=True %}
+          {% include 'core/_field.html' with field=form.address label='Dirección' placeholder='Calle, número y colonia' autocomplete='street-address' %}
+          {% include 'core/_field.html' with field=form.zip_code label='Código postal' placeholder='64000' inputmode='numeric' autocomplete='postal-code' mono=True %}
         </div>
       </fieldset>
 
@@ -69,10 +69,10 @@
         <legend class="sr-only">Contacto</legend>
         <p class="portal-step" aria-hidden="true"><span>3</span>Contacto</p>
         <div class="mt-5 grid gap-5 sm:grid-cols-2">
-          {% include 'suppliers/_field.html' with field=form.contact_name label='Nombre del contacto' placeholder='Ej. Laura Pérez' autocomplete='off' preview='contact' %}
-          {% include 'suppliers/_field.html' with field=form.contact_role label='Puesto del contacto' placeholder='Ej. Ventas' autocomplete='off' %}
-          {% include 'suppliers/_field.html' with field=form.email label='Correo electrónico' placeholder='ventas@proveedor.com' type='email' autocomplete='off' preview='email' %}
-          {% include 'suppliers/_field.html' with field=form.phone label='Teléfono' placeholder='8112345678' type='tel' inputmode='numeric' autocomplete='off' preview='phone' %}
+          {% include 'core/_field.html' with field=form.contact_name label='Nombre del contacto' placeholder='Ej. Laura Pérez' autocomplete='off' preview='contact' %}
+          {% include 'core/_field.html' with field=form.contact_role label='Puesto del contacto' placeholder='Ej. Ventas' autocomplete='off' %}
+          {% include 'core/_field.html' with field=form.email label='Correo electrónico' placeholder='ventas@proveedor.com' type='email' autocomplete='off' preview='email' %}
+          {% include 'core/_field.html' with field=form.phone label='Teléfono' placeholder='8112345678' type='tel' inputmode='numeric' autocomplete='off' preview='phone' %}
         </div>
         <p class="portal-hint">Escribe el teléfono solo con números, sin espacios ni guiones.</p>
       </fieldset>
@@ -81,9 +81,9 @@
         <legend class="sr-only">Pago</legend>
         <p class="portal-step" aria-hidden="true"><span>4</span>Condiciones de pago</p>
         <div class="mt-5 grid gap-5 sm:grid-cols-3">
-          {% include 'suppliers/_field.html' with field=form.payment_terms label='Plazo de pago' placeholder='30 días' autocomplete='off' list='terms-options' %}
-          {% include 'suppliers/_field.html' with field=form.currency label='Moneda' placeholder='MXN' autocomplete='off' list='currency-options' %}
-          {% include 'suppliers/_field.html' with field=form.payment_method label='Método de pago' placeholder='Transferencia' autocomplete='off' list='method-options' %}
+          {% include 'core/_field.html' with field=form.payment_terms label='Plazo de pago' placeholder='30 días' autocomplete='off' list='terms-options' %}
+          {% include 'core/_field.html' with field=form.currency label='Moneda' placeholder='MXN' autocomplete='off' list='currency-options' %}
+          {% include 'core/_field.html' with field=form.payment_method label='Método de pago' placeholder='Transferencia' autocomplete='off' list='method-options' %}
         </div>
         <datalist id="terms-options">
           <option value="Contado"></option>
@@ -103,7 +103,7 @@
           <option value="Tarjeta"></option>
         </datalist>
         <div class="mt-5">
-          {% include 'suppliers/_field.html' with field=form.bank_account label='Cuenta bancaria (CLABE)' placeholder='18 dígitos' autocomplete='off' mono=True %}
+          {% include 'core/_field.html' with field=form.bank_account label='Cuenta bancaria (CLABE)' placeholder='18 dígitos' autocomplete='off' mono=True %}
         </div>
 
         <div class="mt-6 sm:max-w-xs">

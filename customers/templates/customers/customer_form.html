@@ -1,0 +1,191 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{% if customer %}Editar cliente{% else %}Crear cliente{% endif %}{% endblock %}
+
+{% block content %}
+  <section class="portal-reveal" style="--delay: 0ms">
+    <nav aria-label="Ruta" class="portal-crumbs">
+      <a href="{% url 'customers:customers_list' %}">Clientes</a>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span aria-current="page">{% if customer %}Editar{% else %}Nuevo{% endif %}</span>
+    </nav>
+    <h1 class="portal-display mt-2 text-3xl">{% if customer %}Editar {{ customer }}{% else %}Nuevo cliente{% endif %}</h1>
+    <p class="portal-muted mt-1 text-sm">
+      {% if customer %}Actualiza la información del cliente.{% else %}Completa sus datos fiscales, de contacto y de pago.{% endif %}
+    </p>
+  </section>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_23rem]">
+    <!-- Formulario -->
+    <form method="post" class="portal-reveal portal-card p-5 sm:p-7" style="--delay: 60ms" data-loading-form data-preview-form novalidate>
+      {% csrf_token %}
+
+      {% for error in form.non_field_errors %}
+        <div class="portal-alert portal-alert--error mb-6" role="alert">{{ error }}</div>
+      {% endfor %}
+
+      <fieldset>
+        <legend class="portal-step"><span>1</span>Identificación</legend>
+        <div class="mt-5 grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
+          {% include 'core/_field.html' with field=form.id_customer label='ID de cliente' placeholder='CL-001' autocomplete='off' preview='id' mono=True %}
+          {% include 'core/_field.html' with field=form.name label='Nombre' placeholder='Ej. Panadería La Espiga' preview='name' %}
+        </div>
+        <div class="mt-5 sm:max-w-sm">
+          {% include 'core/_field.html' with field=form.tax_id label='ID fiscal (RFC)' placeholder='PES010101ABC' autocomplete='off' preview='tax' mono=True %}
+        </div>
+      </fieldset>
+
+      <fieldset class="portal-divider mt-8 pt-7">
+        <legend class="sr-only">Ubicación</legend>
+        <p class="portal-step" aria-hidden="true"><span>2</span>Ubicación</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+          <div>
+            <label for="{{ form.country.id_for_label }}" class="portal-label">País</label>
+            <select name="{{ form.country.html_name }}" id="{{ form.country.id_for_label }}" required class="portal-field" data-preview-source="country" {% if form.country.errors %}aria-invalid="true" aria-describedby="id_country_errors"{% endif %}>
+              <option value="">Elige un país</option>
+              {% for country in all_countries %}
+                <option value="{{ country.pk }}" {% if country.pk|stringformat:"s" == form.country.value|stringformat:"s" %}selected{% endif %}>{{ country }}</option>
+              {% endfor %}
+            </select>
+            {% if form.country.errors %}<div id="id_country_errors" class="portal-field-error">{% for error in form.country.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
+          {% include 'core/_field.html' with field=form.state label='Estado o provincia' placeholder='Jalisco' autocomplete='address-level1' optional=True %}
+          {% include 'core/_field.html' with field=form.city label='Ciudad' placeholder='Guadalajara' autocomplete='address-level2' preview='city' optional=True %}
+        </div>
+        <div class="mt-5 grid gap-5 sm:grid-cols-[minmax(0,1fr)_10rem]">
+          {% include 'core/_field.html' with field=form.address label='Dirección' placeholder='Calle, número y colonia' autocomplete='street-address' optional=True %}
+          {% include 'core/_field.html' with field=form.zip_code label='Código postal' placeholder='44100' inputmode='numeric' autocomplete='postal-code' mono=True optional=True %}
+        </div>
+      </fieldset>
+
+      <fieldset class="portal-divider mt-8 pt-7">
+        <legend class="sr-only">Contacto</legend>
+        <p class="portal-step" aria-hidden="true"><span>3</span>Contacto</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          {% include 'core/_field.html' with field=form.email label='Correo electrónico' placeholder='compras@cliente.com' type='email' autocomplete='off' preview='email' optional=True %}
+          {% include 'core/_field.html' with field=form.phone label='Teléfono' placeholder='3312345678' type='tel' inputmode='numeric' autocomplete='off' preview='phone' optional=True %}
+        </div>
+      </fieldset>
+
+      <fieldset class="portal-divider mt-8 pt-7">
+        <legend class="sr-only">Pago</legend>
+        <p class="portal-step" aria-hidden="true"><span>4</span>Condiciones de pago</p>
+        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+          <div>
+            <label for="{{ form.currency.id_for_label }}" class="portal-label">Moneda</label>
+            <select name="{{ form.currency.html_name }}" id="{{ form.currency.id_for_label }}" required class="portal-field" data-preview-source="currency" {% if form.currency.errors %}aria-invalid="true" aria-describedby="id_currency_errors"{% endif %}>
+              <option value="">Elige una moneda</option>
+              {% for currency in all_currencies %}
+                <option value="{{ currency.pk }}" {% if currency.pk|stringformat:"s" == form.currency.value|stringformat:"s" %}selected{% endif %}>{{ currency }}</option>
+              {% endfor %}
+            </select>
+            {% if form.currency.errors %}<div id="id_currency_errors" class="portal-field-error">{% for error in form.currency.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+          </div>
+          {% include 'core/_field.html' with field=form.payment_terms label='Plazo de pago' placeholder='30 días' autocomplete='off' list='terms-options' preview='terms' optional=True %}
+          {% include 'core/_field.html' with field=form.payment_method label='Método de pago' placeholder='Transferencia' autocomplete='off' list='method-options' optional=True %}
+        </div>
+        <datalist id="terms-options">
+          <option value="Contado"></option>
+          <option value="15 días"></option>
+          <option value="30 días"></option>
+          <option value="60 días"></option>
+        </datalist>
+        <datalist id="method-options">
+          <option value="Transferencia"></option>
+          <option value="Cheque"></option>
+          <option value="Efectivo"></option>
+          <option value="Tarjeta"></option>
+        </datalist>
+        <div class="mt-5">
+          {% include 'core/_field.html' with field=form.bank_account label='Cuenta bancaria (CLABE)' placeholder='18 dígitos' autocomplete='off' mono=True optional=True %}
+        </div>
+
+        <div class="mt-6 sm:max-w-xs">
+          <label for="{{ form.status.id_for_label }}" class="portal-label">Estado</label>
+          <select name="{{ form.status.html_name }}" id="{{ form.status.id_for_label }}" required class="portal-field" data-preview-source="status" {% if form.status.errors %}aria-invalid="true" aria-describedby="id_status_errors"{% endif %}>
+            {% for status in all_status %}
+              <option value="{{ status.pk }}" data-active="{{ status.is_active|yesno:'true,false' }}" {% if status.pk|stringformat:"s" == form.status.value|stringformat:"s" %}selected{% endif %}>{{ status.name }}</option>
+            {% endfor %}
+          </select>
+          {% if form.status.errors %}<div id="id_status_errors" class="portal-field-error">{% for error in form.status.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+        </div>
+      </fieldset>
+
+      <div class="portal-divider mt-8 flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:justify-end">
+        <a href="{% url 'customers:customers_list' %}" class="portal-button-secondary">Cancelar</a>
+        <button type="submit" data-loading-label="{% if customer %}Guardando...{% else %}Creando...{% endif %}" class="portal-button">
+          <span data-submit-label>{% if customer %}Guardar cambios{% else %}Crear cliente{% endif %}</span>
+          <span class="ui-loading-spinner" aria-hidden="true" hidden></span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Ficha del cliente (vista previa en vivo) y registro -->
+    <aside class="space-y-5 lg:sticky lg:top-5 lg:self-start" aria-label="Vista previa">
+      <div class="portal-reveal portal-card p-5" style="--delay: 120ms">
+        <div class="flex items-center justify-between gap-3">
+          <p class="portal-card-title">Ficha del cliente</p>
+          <span data-preview="status">
+            {% for status in all_status %}{% if status.pk|stringformat:"s" == form.status.value|stringformat:"s" %}{% include 'core/_status_badge.html' %}{% endif %}{% endfor %}
+          </span>
+        </div>
+        <p class="portal-subtle mt-1 text-xs">Se actualiza mientras escribes.</p>
+
+        <div class="portal-slot mt-5" aria-hidden="true"></div>
+        <div class="portal-receipt">
+          <span class="portal-code" data-preview="id" data-empty="SIN-ID">{{ form.id_customer.value|default:'SIN-ID' }}</span>
+          <p class="mt-3 break-words text-xl font-bold leading-tight" data-preview="name" data-empty="Cliente sin nombre">{{ form.name.value|default:'Cliente sin nombre' }}</p>
+          <p class="portal-muted mt-1 break-words font-mono text-sm leading-6" data-preview="tax" data-empty="Sin ID fiscal">{{ form.tax_id.value|default:'Sin ID fiscal' }}</p>
+          <dl class="portal-receipt__rows">
+            <div>
+              <dt>Ciudad</dt>
+              <dd data-preview="city" data-empty="—">{{ form.city.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>País</dt>
+              <dd data-preview="country" data-empty="—">{% for country in all_countries %}{% if country.pk|stringformat:"s" == form.country.value|stringformat:"s" %}{{ country }}{% endif %}{% endfor %}</dd>
+            </div>
+            <div>
+              <dt>Correo</dt>
+              <dd data-preview="email" data-empty="—">{{ form.email.value|default:'—' }}</dd>
+            </div>
+            <div>
+              <dt>Teléfono</dt>
+              <dd class="tabular-nums" data-preview="phone" data-empty="—">{{ form.phone.value|default:'—' }}</dd>
+            </div>
+          </dl>
+          <dl class="portal-receipt__rows">
+            <div>
+              <dt>Moneda</dt>
+              <dd data-preview="currency" data-empty="—">{% for currency in all_currencies %}{% if currency.pk|stringformat:"s" == form.currency.value|stringformat:"s" %}{{ currency }}{% endif %}{% endfor %}</dd>
+            </div>
+            <div>
+              <dt>Plazo</dt>
+              <dd data-preview="terms" data-empty="—">{{ form.payment_terms.value|default:'—' }}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      {% if customer %}
+        <div class="portal-reveal portal-card p-5" style="--delay: 180ms">
+          <p class="portal-card-title">Registro</p>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Creado por</dt>
+              <dd class="font-semibold">{{ customer.created_by.username|default:"—" }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Creado</dt>
+              <dd class="font-semibold tabular-nums"><time datetime="{{ customer.created_at|date:'c' }}">{{ customer.created_at|date:"j M Y, H:i" }}</time></dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="portal-muted">Última edición</dt>
+              <dd class="font-semibold tabular-nums"><time datetime="{{ customer.updated_at|date:'c' }}">{{ customer.updated_at|date:"j M Y, H:i" }}</time></dd>
+            </div>
+          </dl>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}

@@ -12,7 +12,6 @@ class SupplierForm(forms.ModelForm):
     super().__init__(*args, **kwargs)
 
     if not self.instance.pk and not self.is_bound:
-      # El modelo usa default=1 en `status`; un proveedor nuevo empieza en el primer estado activo
       self.initial['status'] = Status.default_pk()
 
 class CsvUploadForm(forms.Form):

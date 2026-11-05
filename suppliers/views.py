@@ -63,7 +63,7 @@ def suppliers_list(request):
         supplier.legal_name,
         supplier.name,
         supplier.tax_id,
-        supplier.country,
+        supplier.country.abbreviation if supplier.country else '',
         supplier.state_province,
         supplier.city,
         supplier.address,
@@ -77,10 +77,10 @@ def suppliers_list(request):
         supplier.currency,
         supplier.payment_method,
         supplier.bank_account,
-        supplier.status,
-        supplier.created_by.username if supplier.created_by else 'N/A',
-        supplier.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        supplier.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+        supplier.status.name if supplier.status else '',
+        f"{supplier.created_by.first_name} {supplier.created_by.last_name}" if supplier.created_by else '',
+        supplier.created_at.strftime('%Y-%m-%d %H:%M:%S') if supplier.created_at else '',
+        supplier.updated_at.strftime('%Y-%m-%d %H:%M:%S') if supplier.updated_at else '',
       ])
     return response
 
